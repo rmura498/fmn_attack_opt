@@ -167,7 +167,7 @@ def fmn(model: nn.Module,
         delta_optim.step()
 
         # project in place
-        projection(δ=delta.data, ε=epsilon)
+        projection(delta=delta.data, epsilon=epsilon)
 
         # clamp
         delta.data.add_(inputs).clamp_(min=0, max=1).sub_(inputs)
