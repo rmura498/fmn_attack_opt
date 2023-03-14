@@ -8,6 +8,15 @@ from FMN.FMN_attack_opt import fmn
 
 
 if __name__=='__main__':
+    #TODO:  create a class to perform the experiments
+    #        - allows to perform a single experiment in a run (batch or single samples)
+    #        - allows to keep track of the experiment results (model accuracy, attack params)
+
+    # exp = TestAttack(model, dataset, batch (true, false), attack)
+    # exp.run()
+    # exp.plotEpsilonLoss() - plots epsilon and loss over the iteration
+
+
     model_params_path = download_model()
 
     model = SmallCNN()
