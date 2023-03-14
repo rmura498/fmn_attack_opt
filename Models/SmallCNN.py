@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from torch import nn
 
-
 class SmallCNN(nn.Module):
     def __init__(self, drop=0.5):
         super(SmallCNN, self).__init__()

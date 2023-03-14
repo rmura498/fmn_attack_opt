@@ -26,4 +26,9 @@ def difference_of_logits_ratio(logits: Tensor, labels: Tensor, labels_infhot: Op
         top3_logits = torch.topk(logits, k=3, dim=1).values
         logit_normalization = top3_logits[:, 0] - top3_logits[:, -1]
 
-    return (logit_dists + ε) / (logit_normalization + 1e-8)
+    return (logit_dists + epsilon) / (logit_normalization + 1e-8)
+
+def accuracy(model, samples, labels):
+    preds = model(samples)
+    acc = (preds.argmax(dim=1) == labels).float().mean()
+    return acc.item()
