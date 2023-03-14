@@ -2,7 +2,7 @@ import torch
 import math
 from functools import partial
 from typing import Optional
-
+from torch.autograd import grad
 from torch import nn, Tensor
 from torch.optim.lr_scheduler import CosineAnnealingLR, ReduceLROnPlateau, CosineAnnealingWarmRestarts
 
@@ -92,6 +92,7 @@ class FmnOpt:
 
     def init_attack(self):
 
+
         _dual_projection_mid_points = {
             0: (None, l0_projection_, l0_mid_points),
             1: (float('inf'), l1_projection_, l1_mid_points),
@@ -165,7 +166,7 @@ class FmnOpt:
 
             logit_diffs = logit_diff_func(logits=logits)
             loss = self.multiplier * logit_diffs
-            self.delta = grad(loss.sum(), self.delta, only_inputs=True)[0]
+            delta_grad = grad(loss.sum(), self.delta, only_inputs=True)[0]
 
             is_adv = (pred_labels == self.labels) if self.targeted else (pred_labels != self.labels)
             is_smaller = delta_norm < self.best_norm
@@ -193,12 +194,12 @@ class FmnOpt:
             delta_grad.div_(self.batch_view(grad_l2_norms))
 
             # gradient ascent step
-            delta.data.add_(delta_grad, alpha=α)
+            self.delta.data.add_(delta_grad, alpha=α)
 
             # project in place
-            self.projection(delta=delta.data, epsilon=epsilon)
+            self.projection(delta=self.delta.data, epsilon=epsilon)
 
             # clamp
-            delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
+            self.delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
 
         return self.best_adv
