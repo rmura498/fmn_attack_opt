@@ -3,14 +3,14 @@ from torch import nn, Tensor
 from typing import Union
 
 
-def simplex_projection(x: Tensor, ε: Union[float, Tensor] = 1) -> Tensor:
+def simplex_projection(x: Tensor, epsilon: Union[float, Tensor] = 1) -> Tensor:
     """
     Simplex projection based on sorting.
     Parameters
     ----------
     x : Tensor
         Batch of vectors to project on the simplex.
-    ε : float or Tensor
+    epsilon : float or Tensor
         Size of the simplex, default to 1 for the probability simplex.
     Returns
     -------
@@ -18,9 +18,9 @@ def simplex_projection(x: Tensor, ε: Union[float, Tensor] = 1) -> Tensor:
         Batch of projected vectors on the simplex.
     """
     u = x.sort(dim=1, descending=True)[0]
-    ε = ε.unsqueeze(1) if isinstance(ε, Tensor) else torch.tensor(ε, device=x.device)
+    epsilon = epsilon.unsqueeze(1) if isinstance(epsilon, Tensor) else torch.tensor(epsilon, device=x.device)
     indices = torch.arange(x.size(1), device=x.device)
-    cumsum = torch.cumsum(u, dim=1).sub_(ε).div_(indices + 1)
+    cumsum = torch.cumsum(u, dim=1).sub_(epsilon).div_(indices + 1)
     K = (cumsum < u).long().mul_(indices).amax(dim=1, keepdim=True)
     τ = cumsum.gather(1, K)
     return (x - τ).clamp_(min=0)
@@ -37,7 +37,8 @@ def l0_projection_(delta: Tensor, epsilon: Tensor) -> Tensor:
 
 def l1_projection_(delta: Tensor, epsilon: Tensor, inplace: bool = False) -> Tensor:
     """In-place l1 projection"""
-    print(delta.shape, " ", epsilon.shape)
+    delta=delta.flatten(1)
+
     if (to_project := delta.norm(p=1, dim=1) > epsilon).any():
         x_to_project = delta[to_project]
         epsilon_ = epsilon[to_project] if isinstance(epsilon, Tensor) else torch.tensor([epsilon], device=delta.device)

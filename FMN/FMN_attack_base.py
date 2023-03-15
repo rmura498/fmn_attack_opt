@@ -4,7 +4,8 @@ from functools import partial
 from typing import Optional
 
 from torch import nn, Tensor
-from torch.optim.lr_scheduler import CosineAnnealingLR, ReduceLROnPlateau, CosineAnnealingWarmRestarts
+from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.autograd import grad
 
 from Utils.projections import l0_projection_, l1_projection_, l2_projection_, linf_projection_
 from Utils.projections import l0_mid_points, l1_mid_points, l2_mid_points, linf_mid_points
@@ -12,7 +13,7 @@ from Utils.plots import plot_loss_epsilon_over_steps
 from Utils.metrics import difference_of_logits
 
 
-class FmnOpt:
+class FmnBase:
     """
     Fast Minimum-Norm attack from https://arxiv.org/abs/2102.12827.
     Parameters
@@ -90,7 +91,9 @@ class FmnOpt:
         self.projection = None
         self.mid_point = None
 
-    def init_attack(self):
+        self._init_attack()
+
+    def _init_attack(self):
 
         _dual_projection_mid_points = {
             0: (None, l0_projection_, l0_mid_points),
@@ -154,6 +157,7 @@ class FmnOpt:
             alpha = self.alpha_final + (self.alpha_init - self.alpha_final) * cosine
             gamma = self.gamma_final + (self.gamma_init - self.gamma_final) * cosine
 
+
             delta_norm = self.delta.data.flatten(1).norm(p=self.norm, dim=1)
             adv_inputs = self.inputs + self.delta
             logits = self.model(adv_inputs)
@@ -165,14 +169,19 @@ class FmnOpt:
 
             logit_diffs = logit_diff_func(logits=logits)
             loss = self.multiplier * logit_diffs
-            self.delta = grad(loss.sum(), self.delta, only_inputs=True)[0]
+            loss_per_iter.append(loss.sum().clone().detach().numpy())
+            epsilon_per_iter.append(
+                torch.linalg.norm(self.epsilon).clone().detach().numpy()
+            )
+
+            delta_grad = grad(loss.sum(), self.delta, only_inputs=True)[0]
 
             is_adv = (pred_labels == self.labels) if self.targeted else (pred_labels != self.labels)
             is_smaller = delta_norm < self.best_norm
             is_both = is_adv & is_smaller
             self.adv_found.logical_or_(is_adv)
-            best_norm = torch.where(is_both, delta_norm, self.best_norm)
-            best_adv = torch.where(self.batch_view(is_both), adv_inputs.detach(), self.best_adv)
+            self.best_norm = torch.where(is_both, delta_norm, self.best_norm)
+            self.best_adv = torch.where(self.batch_view(is_both), adv_inputs.detach(), self.best_adv)
 
             if self.norm == 0:
                 self.epsilon = torch.where(is_adv,
@@ -193,12 +202,18 @@ class FmnOpt:
             delta_grad.div_(self.batch_view(grad_l2_norms))
 
             # gradient ascent step
-            delta.data.add_(delta_grad, alpha=α)
+            self.delta.data.add_(delta_grad, alpha=alpha)
 
             # project in place
-            self.projection(delta=delta.data, epsilon=epsilon)
+            self.projection(delta=self.delta.data, epsilon=epsilon)
 
             # clamp
-            delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
+            self.delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
+
+        plot_loss_epsilon_over_steps(
+            loss=loss_per_iter,
+            epsilon=epsilon_per_iter,
+            steps=self.steps
+        )
 
         return self.best_adv
