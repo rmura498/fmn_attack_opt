@@ -79,6 +79,7 @@ class FmnOpt:
         self.binary_search_steps = binary_search_steps
         self.optimizer = optimizer
         self.scheduler = scheduler
+
         self.batch_view = None
         self.best_norm = None
         self.worst_norm = None
@@ -90,7 +91,9 @@ class FmnOpt:
         self.projection = None
         self.mid_point = None
 
-    def init_attack(self):
+        self._init_attack()
+
+    def _init_attack(self):
 
         _dual_projection_mid_points = {
             0: (None, l0_projection_, l0_mid_points),
@@ -128,9 +131,7 @@ class FmnOpt:
 
         if self.norm == 0:
             self.epsilon = torch.ones(batch_size,
-                                      device=device) if self.starting_points is None else self.delta.flatten(1).norm(
-                p=0,
-                dim=0)
+                                      device=device) if self.starting_points is None else self.delta.flatten(1).norm(p=0,dim=0)
         else:
             self.epsilon = torch.full((batch_size,), float('inf'), device=device)
 
@@ -140,8 +141,6 @@ class FmnOpt:
         self.best_adv = self.inputs.clone()
 
         self.adv_found = torch.zeros(batch_size, dtype=torch.bool, device=device)
-
-        self.epsilon.requires_grad_()
         print(f"Initial epsilon value: {self.epsilon.data.norm(p=self.norm)}")
 
     def run(self):
@@ -171,7 +170,9 @@ class FmnOpt:
             loss = -(self.multiplier * logit_diffs)
 
             loss_per_iter.append(loss.sum().clone().detach().numpy())
-            epsilon_per_iter.append(torch.linalg.norm(self.epsilon).clone().detach().numpy())
+            epsilon_per_iter.append(
+                torch.linalg.norm(self.epsilon).clone().detach().numpy()
+            )
 
             loss.sum().backward()
 
@@ -179,17 +180,16 @@ class FmnOpt:
             is_smaller = delta_norm < self.best_norm
             is_both = is_adv & is_smaller
             self.adv_found.logical_or_(is_adv)
-            best_norm = torch.where(is_both, delta_norm, self.best_norm)
-            best_adv = torch.where(self.batch_view(is_both), adv_inputs.detach(), self.best_adv)
+            self.best_norm = torch.where(is_both, delta_norm, self.best_norm)
+            self.best_adv = torch.where(self.batch_view(is_both), adv_inputs.detach(), self.best_adv)
 
             alpha = delta_scheduler.get_last_lr()[0]
-            # print(f"alpha: {alpha} - gamma: {gamma}\n")
 
             if self.norm == 0:
                 self.epsilon = torch.where(is_adv,
                                            torch.minimum(
                                                torch.minimum(self.epsilon - 1, (self.epsilon * (1 - gamma)).floor_()),
-                                               best_norm),
+                                               self.best_norm),
                                            torch.maximum(self.epsilon + 1, (self.epsilon * (1 + gamma)).floor_()))
                 self.epsilon.clamp_(min=0)
             else:
@@ -197,7 +197,7 @@ class FmnOpt:
                                                                                                   dim=1).clamp_(
                     min=1e-12)
                 self.epsilon = torch.where(is_adv,
-                                           torch.minimum(self.epsilon * (1 - gamma), best_norm),
+                                           torch.minimum(self.epsilon * (1 - gamma), self.best_norm),
                                            torch.where(self.adv_found, self.epsilon * (1 + gamma),
                                                        delta_norm + distance_to_boundary))
 
@@ -213,10 +213,6 @@ class FmnOpt:
             self.delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
 
             delta_scheduler.step()
-
-            # mostrare epsilon al variare delle iterazioni
-            # printare la loss
-            # printare la distanza
 
         plot_loss_epsilon_over_steps(
             loss=loss_per_iter,

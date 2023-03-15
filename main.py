@@ -1,10 +1,14 @@
 import torch
 import torchvision
+import os
+from robustbench.utils import download_gdrive
+
 
 from Utils.metrics import accuracy
 from Models.SmallCNN import SmallCNN
-from Models.DownloadModel import download_model
-from FMN.FMN_attack_opt import fmn
+from Models.downloadModel import download_model
+from FMN.FMN_attack_opt import FmnOpt
+from FMN.FMN_attack_base import FmnBase
 
 
 if __name__=='__main__':
@@ -17,10 +21,12 @@ if __name__=='__main__':
     # exp.plotEpsilonLoss() - plots epsilon and loss over the iteration
 
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_params_path = download_model()
 
     model = SmallCNN()
-    model.load_state_dict(torch.load(model_params_path, ))
+
+    model.load_state_dict(torch.load(model_params_path, map_location=device))
     model.eval()
 
     BATCH_SIZE = 10
@@ -32,11 +38,12 @@ if __name__=='__main__':
     samples, labels = next(iter(dl_test))
 
     acc = accuracy(model, samples, labels)
-
     print("standard accuracy: ", acc)
 
     x_adv = samples.clone()
+    # attack = FmnOpt(model, x_adv, labels, norm=1)
+    attack = FmnBase(model, x_adv, labels, norm=1)
+    advs = attack.run()
 
-    advs = fmn(model, x_adv, labels, norm=0)
     acc = accuracy(model, advs, labels)
     print("Robust accuracy", acc)

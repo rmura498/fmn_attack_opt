@@ -37,6 +37,7 @@ def l0_projection_(delta: Tensor, epsilon: Tensor) -> Tensor:
 
 def l1_projection_(delta: Tensor, epsilon: Tensor, inplace: bool = False) -> Tensor:
     """In-place l1 projection"""
+    print(delta.shape, " ", epsilon.shape)
     if (to_project := delta.norm(p=1, dim=1) > epsilon).any():
         x_to_project = delta[to_project]
         epsilon_ = epsilon[to_project] if isinstance(epsilon, Tensor) else torch.tensor([epsilon], device=delta.device)

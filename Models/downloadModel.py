@@ -1,7 +1,7 @@
 import os
 from robustbench.utils import download_gdrive
 
-PRETRAINED_FOLDER = 'pretrained'
+PRETRAINED_FOLDER = 'Models\pretrained'
 MODELS = {
     'mnist_regular' : '12HLUrWgMPF_ApVSsWO4_UHsG9sxdb1VJ'
 }
@@ -12,6 +12,8 @@ def download_model(model='mnist_regular'):
 
     if model not in MODELS.keys():
         return None
+
+    model_id = MODELS[model]
 
     if not os.path.exists(PRETRAINED_FOLDER):
         os.mkdir(PRETRAINED_FOLDER)
