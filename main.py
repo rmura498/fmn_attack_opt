@@ -1,14 +1,10 @@
 import torch
 import torchvision
-import os
-from robustbench.utils import download_gdrive
-
 
 from Utils.metrics import accuracy
 from Models.SmallCNN import SmallCNN
 from Models.downloadModel import download_model
-from FMN.FMN_attack_opt import FmnOpt
-from FMN.FMN_attack_base import FmnBase
+from Attacks.FMN import FmnBase
 
 
 if __name__=='__main__':
