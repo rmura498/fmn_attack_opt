@@ -142,6 +142,4 @@ def fmn(model: nn.Module,
         delta.data.add_(inputs).clamp_(min=0, max=1).sub_(inputs)
 
 
-
-
     return best_adv
