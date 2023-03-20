@@ -171,5 +171,5 @@ class FMNBase(Attack):
             self.delta_per_iter.append(delta)
             self.loss_per_iter.append(loss.sum())
 
-            #if i==self.steps-1: print(f"opt{i}, delta:{delta[0]}")
+
         return self.init_trackers['best_adv']

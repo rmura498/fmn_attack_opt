@@ -1,6 +1,6 @@
 from TestAttack import TestAttack
 from Utils.metrics import accuracy
-
+from Utils.plots import plot_loss_epsilon_over_steps
 from torch.optim import SGD
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
@@ -25,7 +25,7 @@ class TestFMNAttack(TestAttack):
         pass
 
     def plot(self):
-        pass
+        plot_loss_epsilon_over_steps(self.model.loss_per_iter, self.model.epsilon_per_iter, self.model.steps, normalize=False)
 
     def accuracy(self):
         return accuracy(self.model, self.samples, self.labels)
