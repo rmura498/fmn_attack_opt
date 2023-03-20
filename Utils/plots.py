@@ -18,6 +18,7 @@ def normalize_01(data):
 def plot_loss_epsilon_over_steps(loss,
                                  epsilon,
                                  steps,
+                                 norm=None,
                                  attack_name='attack',
                                  model_name='model',
                                  normalize=True):
@@ -39,7 +40,7 @@ def plot_loss_epsilon_over_steps(loss,
     ax1.grid()
     ax1.set_xlabel("Steps")
     ax1.set_ylabel("Loss/Epsilon")
-    ax1.title.set_text(f"Attack: {attack_name}, Model: {model_name}")
+    ax1.title.set_text(f"Attack: {attack_name}, Model: {model_name}, Norm: {norm}")
     fig1.legend()
 
     plt.show()
