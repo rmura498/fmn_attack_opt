@@ -4,7 +4,7 @@ import torchvision
 from Utils.metrics import accuracy
 from Models.SmallCNN import SmallCNN
 from Models.downloadModel import download_model
-from Attacks.FMN import FmnBase
+from Attacks.FMN.FMNBase import FMNBase
 
 
 if __name__=='__main__':
@@ -38,7 +38,7 @@ if __name__=='__main__':
 
     x_adv = samples.clone()
     # attack = FmnOpt(model, x_adv, labels, norm=1)
-    attack = FmnBase(model, x_adv, labels, norm=1)
+    attack = FMNBase(model, x_adv, labels, norm=0)
     advs = attack.run()
 
     acc = accuracy(model, advs, labels)

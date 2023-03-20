@@ -63,8 +63,6 @@ class FMNBase(Attack):
         self.epsilon_per_iter = []
         self.delta_per_iter = []
 
-        self.best_adv = None
-
     def _boundary_search(self):
         _, _, mid_point = self._dual_projection_mid_points[self.norm]
 
@@ -94,6 +92,11 @@ class FMNBase(Attack):
             epsilon, delta, is_adv = self._boundary_search()
         else:
             delta = torch.zeros_like(self.inputs)
+
+        if self.norm == 0:
+            epsilon = torch.ones(self.batch_size, device=self.device) if self.starting_points is None else delta.flatten(1).norm(p=0, dim=0)
+        else:
+            epsilon = torch.full((self.batch_size,), float('inf'), device=self.device)
 
         delta.requires_grad_()
 
@@ -125,11 +128,11 @@ class FMNBase(Attack):
             delta_grad = grad(loss.sum(), delta, only_inputs=True)[0]
 
             is_adv = (pred_labels == self.labels) if self.targeted else (pred_labels != self.labels)
-            is_smaller = delta_norm < best_norm
+            is_smaller = delta_norm < self.init_trackers['best_norm']
             is_both = is_adv & is_smaller
             self.init_trackers['adv_found'].logical_or_(is_adv)
-            best_norm = torch.where(is_both, delta_norm, best_norm)
-            best_adv = torch.where(self.batch_view(is_both), adv_inputs.detach(), best_adv)
+            best_norm = torch.where(is_both, delta_norm, self.init_trackers['best_norm'])
+            self.init_trackers['best_adv'] = torch.where(self.batch_view(is_both), adv_inputs.detach(), self.init_trackers['best_adv'])
 
             if self.norm == 0:
                 epsilon = torch.where(is_adv,
@@ -141,7 +144,7 @@ class FMNBase(Attack):
             else:
                 distance_to_boundary = loss.detach().abs() / delta_grad.flatten(1).norm(p=dual, dim=1).clamp_(min=1e-12)
                 epsilon = torch.where(is_adv,
-                                      torch.minimum(epsilon * (1 - gamma), best_norm),
+                                      torch.minimum(epsilon * (1 - gamma), self.init_trackers['best_norm']),
                                       torch.where(self.init_trackers['adv_found'],
                                                   epsilon * (1 + gamma),
                                                   delta_norm + distance_to_boundary)
@@ -162,3 +165,5 @@ class FMNBase(Attack):
 
             # clamp
             delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
+
+        return self.init_trackers['best_adv']
