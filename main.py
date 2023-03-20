@@ -4,10 +4,9 @@ import torchvision
 from Utils.metrics import accuracy
 from Models.SmallCNN import SmallCNN
 from Models.downloadModel import download_model
+
 from Attacks.FMN.FMNBase import FMNBase
 from Attacks.FMN.FMNOpt import FMNOpt
-
-from Attacks.FMN import original_fmn
 
 
 if __name__=='__main__':
