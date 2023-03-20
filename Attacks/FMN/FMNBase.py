@@ -167,9 +167,16 @@ class FMNBase(Attack):
             # clamp
             delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
 
-            self.epsilon_per_iter.append(epsilon.norm(p=self.norm, dim=1))
+            _epsilon = epsilon.clone()
+            _loss = loss.clone().sum().detach().numpy()
+            _delta = delta.clone().detach().numpy()
+            self.epsilon_per_iter.append(
+                torch.linalg.norm(
+                    _epsilon,
+                    ord=self.norm
+                ))
             self.delta_per_iter.append(delta)
-            self.loss_per_iter.append(loss.sum())
+            self.loss_per_iter.append(loss.sum().detach().numpy())
 
 
         return self.init_trackers['best_adv']

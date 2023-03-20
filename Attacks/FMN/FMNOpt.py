@@ -125,7 +125,6 @@ class FMNOpt(Attack):
             self.optimizer.zero_grad()
 
             cosine = (1 + math.cos(math.pi * i / self.steps)) / 2
-            # alpha = self.alpha_final + (self.alpha_init - self.alpha_final) * cosine
             gamma = self.gamma_final + (self.gamma_init - self.gamma_final) * cosine
 
             delta_norm = delta.data.flatten(1).norm(p=self.norm, dim=1)
@@ -181,8 +180,18 @@ class FMNOpt(Attack):
             delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
 
             self.scheduler.step()
-            self.epsilon_per_iter.append(epsilon.norm(p=self.norm, dim=1))
-            self.delta_per_iter.append(delta)
-            self.loss_per_iter.append(loss.sum())
+
+            _epsilon = epsilon.clone()
+            _loss = -loss.clone().sum().detach().numpy()
+            _delta = delta.clone().detach().numpy()
+            self.epsilon_per_iter.append(
+                torch.linalg.norm(
+                    _epsilon,
+                    ord=self.norm
+                ))
+            self.delta_per_iter.append(_delta)
+            self.loss_per_iter.append(_loss)
+
+            del _epsilon, _loss, _delta
 
         return self.init_trackers['best_adv']
