@@ -59,6 +59,7 @@ class TestFMNAttack(TestAttack):
             self.attack.loss_per_iter,
             self.attack.epsilon_per_iter,
             self.steps,
+            norm=self.norm,
             attack_name=self.attack.__class__.__name__,
             model_name=self.model.__class__.__name__,
             normalize=True
