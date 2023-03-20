@@ -1,9 +1,23 @@
 from TestAttack import TestAttack
+from Utils.metrics import accuracy
 
+from torch.optim import SGD
+from torch.optim.lr_scheduler import CosineAnnealingLR
 
 class TestFMNAttack(TestAttack):
-    def __init__(self, model, dataset, attack):
+    def __init__(self,
+                 model,
+                 dataset,
+                 attack,
+                 batch_size=10,
+                 optimizer=SGD,
+                 scheduler=CosineAnnealingLR):
         super().__init__(model, dataset, attack)
+
+        #TODO: initialize samples and labels
+
+        # self.samples
+        # self.labels
 
     def run(self):
         # run the attack
@@ -11,14 +25,9 @@ class TestFMNAttack(TestAttack):
         pass
 
     def plot(self):
-        # execute the plotting functions
-        self._plot_loss_over_iters()
-        self._plot_epsilon_over_iters()
-
-    def _plot_loss_over_iters(self):
-        # there should be a reference on the loss per iteration computed during the attack run
         pass
 
-    def _plot_epsilon_over_iters(self):
-        pass
+    def accuracy(self):
+        return accuracy(self.model, self.samples, self.labels)
+
 

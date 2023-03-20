@@ -1,7 +1,6 @@
 import math
 import torch
 from torch import nn, Tensor
-from torch.autograd import grad
 from torch.optim import SGD
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
@@ -141,8 +140,6 @@ class FMNOpt(Attack):
             loss = -(multiplier * logit_diffs)
             loss.sum().backward()
             delta_grad = delta.grad.data
-
-            #delta_grad = grad(loss.sum(), delta, only_inputs=True)[0]
 
             is_adv = (pred_labels == self.labels) if self.targeted else (pred_labels != self.labels)
             is_smaller = delta_norm < self.init_trackers['best_norm']

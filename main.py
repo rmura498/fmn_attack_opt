@@ -23,7 +23,6 @@ if __name__=='__main__':
     model_params_path = download_model()
 
     model = SmallCNN()
-
     model.load_state_dict(torch.load(model_params_path, map_location=device))
     model.eval()
 
@@ -39,8 +38,10 @@ if __name__=='__main__':
 
     x_adv = samples.clone()
     norm = 0
-    attack = FMNBase(model, x_adv, labels, norm=norm)
-    attack_opt = FMNOpt(model, x_adv, labels, norm=norm)
+    steps = 50
+
+    attack = FMNBase(model, x_adv, labels, norm=norm, steps=steps)
+    attack_opt = FMNOpt(model, x_adv, labels, norm=norm, steps=steps)
 
     advs = attack.run()
     advs_opt = attack_opt.run()
