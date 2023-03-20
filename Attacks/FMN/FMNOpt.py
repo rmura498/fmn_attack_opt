@@ -66,6 +66,7 @@ class FMNOpt(Attack):
 
         self.epsilon_per_iter = []
         self.delta_per_iter = []
+        self.loss_per_iter = []
 
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -183,5 +184,9 @@ class FMNOpt(Attack):
             delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
 
             self.scheduler.step()
+            self.epsilon_per_iter.append(epsilon.norm(p=self.norm, dim=1))
+            self.delta_per_iter.append(delta)
+            self.loss_per_iter.append(loss.sum())
 
+            #if i==self.steps-1: print(f"opt{i}, delta:{delta[0]}")
         return self.init_trackers['best_adv']

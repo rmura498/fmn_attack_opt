@@ -62,6 +62,7 @@ class FMNBase(Attack):
 
         self.epsilon_per_iter = []
         self.delta_per_iter = []
+        self.loss_per_iter = []
 
     def _boundary_search(self):
         _, _, mid_point = self._dual_projection_mid_points[self.norm]
@@ -166,4 +167,9 @@ class FMNBase(Attack):
             # clamp
             delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
 
+            self.epsilon_per_iter.append(epsilon.norm(p=self.norm, dim=1))
+            self.delta_per_iter.append(delta)
+            self.loss_per_iter.append(loss.sum())
+
+            #if i==self.steps-1: print(f"opt{i}, delta:{delta[0]}")
         return self.init_trackers['best_adv']
