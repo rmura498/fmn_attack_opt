@@ -6,6 +6,8 @@ from Models.SmallCNN import SmallCNN
 from Models.downloadModel import download_model
 from Attacks.FMN.FMNBase import FMNBase
 
+from Attacks.FMN import original_fmn
+
 
 if __name__=='__main__':
     #TODO:  create a class to perform the experiments
@@ -40,6 +42,8 @@ if __name__=='__main__':
     # attack = FmnOpt(model, x_adv, labels, norm=1)
     attack = FMNBase(model, x_adv, labels, norm=0)
     advs = attack.run()
+
+    #advs = original_fmn.fmn(model, x_adv, labels, norm=0)
 
     acc = accuracy(model, advs, labels)
     print("Robust accuracy", acc)
