@@ -131,14 +131,14 @@ class FMNBase(Attack):
             is_smaller = delta_norm < self.init_trackers['best_norm']
             is_both = is_adv & is_smaller
             self.init_trackers['adv_found'].logical_or_(is_adv)
-            best_norm = torch.where(is_both, delta_norm, self.init_trackers['best_norm'])
+            self.init_trackers['best_norm'] = torch.where(is_both, delta_norm, self.init_trackers['best_norm'])
             self.init_trackers['best_adv'] = torch.where(self.batch_view(is_both), adv_inputs.detach(), self.init_trackers['best_adv'])
 
             if self.norm == 0:
                 epsilon = torch.where(is_adv,
                                       torch.minimum(torch.minimum(epsilon - 1,
                                                                   (epsilon * (1 - gamma)).floor_()),
-                                                    best_norm),
+                                                    self.init_trackers['best_norm']),
                                       torch.maximum(epsilon + 1, (epsilon * (1 + gamma)).floor_()))
                 epsilon.clamp_(min=0)
             else:
