@@ -2,10 +2,20 @@ from abc import ABC, abstractmethod
 
 
 class TestAttack(ABC):
-    def __init__(self, model, dataset, attack, batch_size, optimizer, scheduler):
+    def __init__(self,
+                 model,
+                 dataset,
+                 attack,
+                 norm,
+                 steps,
+                 batch_size,
+                 optimizer=None,
+                 scheduler=None):
         self.model = model
         self.dataset = dataset
         self.attack = attack
+        self.norm = norm
+        self.steps = steps
         self.batch_size = batch_size
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -16,8 +26,4 @@ class TestAttack(ABC):
 
     @abstractmethod
     def plot(self):
-        pass
-
-    @abstractmethod
-    def accuracy(self):
         pass
