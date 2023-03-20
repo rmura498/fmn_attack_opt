@@ -181,6 +181,7 @@ class FMNOpt(Attack):
 
             self.scheduler.step()
 
+            # TODO: move this params retrieval to another function
             _epsilon = epsilon.clone()
             _loss = -loss.clone().sum().detach().numpy()
             _delta = delta.clone().detach().numpy()
