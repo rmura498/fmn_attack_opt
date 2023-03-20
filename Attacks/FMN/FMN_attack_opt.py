@@ -169,10 +169,12 @@ class FmnOpt:
             logit_diffs = logit_diff_func(logits=logits)
             loss = -(self.multiplier * logit_diffs)
 
+            # plotting purposes ----
             loss_per_iter.append(loss.sum().clone().detach().numpy())
             epsilon_per_iter.append(
                 torch.linalg.norm(self.epsilon).clone().detach().numpy()
             )
+            # ----
 
             loss.sum().backward()
 

@@ -5,6 +5,7 @@ from Utils.metrics import accuracy
 from Models.SmallCNN import SmallCNN
 from Models.downloadModel import download_model
 from Attacks.FMN.FMNBase import FMNBase
+from Attacks.FMN.FMNOpt import FMNOpt
 
 from Attacks.FMN import original_fmn
 
@@ -32,18 +33,20 @@ if __name__=='__main__':
                                             transform=torchvision.transforms.ToTensor())
     dl_test = torch.utils.data.DataLoader(mnist_test, batch_size=BATCH_SIZE, shuffle=False)
 
-
     samples, labels = next(iter(dl_test))
 
     acc = accuracy(model, samples, labels)
     print("standard accuracy: ", acc)
 
     x_adv = samples.clone()
-    # attack = FmnOpt(model, x_adv, labels, norm=1)
-    attack = FMNBase(model, x_adv, labels, norm=0)
-    advs = attack.run()
+    norm = 0
+    attack = FMNBase(model, x_adv, labels, norm=norm)
+    attack_opt = FMNOpt(model, x_adv, labels, norm=norm)
 
-    #advs = original_fmn.fmn(model, x_adv, labels, norm=0)
+    advs = attack.run()
+    advs_opt = attack_opt.run()
 
     acc = accuracy(model, advs, labels)
+    acc_opt = accuracy(model, advs_opt, labels)
     print("Robust accuracy", acc)
+    print("Robust accuracy (opt)", acc_opt)
