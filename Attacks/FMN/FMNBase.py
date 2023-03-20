@@ -31,11 +31,11 @@ class FMNBase(Attack):
         self.model = model
         self.inputs = inputs
         self.labels = labels
-        self.norm: norm
+        self.norm = norm
         self.targeted = targeted
         self.steps = steps
         self.alpha_init = alpha_init
-        self.alpha_final = alpha_final
+        self.alpha_final = self.alpha_init / 100 if alpha_final is None else alpha_final
         self.gamma_init = gamma_init
         self.gamma_final = gamma_final
         self.starting_points = starting_points
@@ -54,10 +54,10 @@ class FMNBase(Attack):
 
         _worst_norm = torch.maximum(inputs, 1 - inputs).flatten(1).norm(p=norm, dim=1)
         self.init_trackers = {
-            'worst_norm' : _worst_norm,
-            'best_norm' : _worst_norm.clone(),
-            'best_adv'  : self.inputs.clone(),
-            'adv_found' : torch.zeros(self.batch_size, dtype=torch.bool, device=self.device)
+            'worst_norm': _worst_norm,
+            'best_norm': _worst_norm.clone(),
+            'best_adv': self.inputs.clone(),
+            'adv_found': torch.zeros(self.batch_size, dtype=torch.bool, device=self.device)
         }
 
         self.epsilon_per_iter = []
