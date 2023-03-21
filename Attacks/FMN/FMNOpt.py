@@ -122,7 +122,9 @@ class FMNOpt(Attack):
                                         T_max=self.steps,
                                         eta_min=self.alpha_final)
 
+        print("Starting the attack...\n")
         for i in range(self.steps):
+            print(f"Attack completion: {i/self.steps *100}%")
             self.optimizer.zero_grad()
 
             cosine = (1 + math.cos(math.pi * i / self.steps)) / 2

@@ -13,8 +13,8 @@ def normalize_01(data):
         return (data - np.min(data)) / (np.max(data) - np.min(data))
 
 
-def plot_loss_epsilon_over_steps(loss,
-                                 epsilon,
+def plot_loss_epsilon_over_steps(loss=None,
+                                 epsilon=None,
                                  distance_to_boundary=None,
                                  steps=10,
                                  norm=None,
@@ -23,25 +23,29 @@ def plot_loss_epsilon_over_steps(loss,
                                  normalize=True):
 
     if normalize:
-        loss = normalize_01(loss)
-        loss = loss - loss.mean()
-        epsilon = normalize_01(epsilon)
+        if loss is not None:
+            loss = normalize_01(loss)
+            loss = loss - loss.mean()
+        if epsilon is not None:
+            epsilon = normalize_01(epsilon)
 
-        if norm != 0:
+        if norm != 0 and distance_to_boundary is not None:
             distance_to_boundary = normalize_01(distance_to_boundary)
 
     fig1, ax1 = plt.subplots()
-    ax1.plot(
-        torch.arange(0, steps),
-        loss,
-        label="Loss"
-    )
-    ax1.plot(
-        torch.arange(0, steps),
-        epsilon,
-        label="Epsilon"
-    )
-    if norm != 0:
+    if loss is not None:
+        ax1.plot(
+            torch.arange(0, steps),
+            loss,
+            label="Loss"
+        )
+    if epsilon is not None:
+        ax1.plot(
+            torch.arange(0, steps),
+            epsilon,
+            label="Epsilon"
+        )
+    if norm != 0 and distance_to_boundary is not None:
         ax1.plot(
             torch.arange(0, steps),
             distance_to_boundary,

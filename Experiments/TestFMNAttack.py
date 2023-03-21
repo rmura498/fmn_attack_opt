@@ -32,7 +32,9 @@ class TestFMNAttack(TestAttack):
             scheduler
         )
 
-        self.dl_test = torch.utils.data.DataLoader(dataset, batch_size=self.batch_size, shuffle=False)
+        self.dl_test = torch.utils.data.DataLoader(dataset,
+                                                   batch_size=self.batch_size,
+                                                   shuffle=True)
         self.samples, self.labels = next(iter(self.dl_test))
         # TODO: create a function where samples, labels are dropped
 
@@ -51,10 +53,12 @@ class TestFMNAttack(TestAttack):
     def run(self):
         advs = self.attack.run()
 
+        standard_acc = accuracy(self.model, self.samples, self.labels)
         model_robust_acc = accuracy(self.model, advs, self.labels)
+        print("Standard Accuracy", standard_acc)
         print("Robust accuracy: ", model_robust_acc)
 
-    def plot(self):
+    def plot(self, normalize=False):
         plot_loss_epsilon_over_steps(
             self.attack.loss_per_iter,
             self.attack.epsilon_per_iter,
@@ -63,6 +67,6 @@ class TestFMNAttack(TestAttack):
             norm=self.norm,
             attack_name=self.attack.__class__.__name__,
             model_name=self.model.__class__.__name__,
-            normalize=True
+            normalize=normalize
         )
 
