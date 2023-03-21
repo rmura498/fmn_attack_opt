@@ -51,6 +51,18 @@ if __name__=='__main__':
             'norm': 1,
             'steps': 50,
             'attack': [FMNBase, FMNOpt]
+        },
+        {
+            'batch_size': 10,
+            'norm': 2,
+            'steps': 50,
+            'attack': [FMNBase, FMNOpt]
+        },
+        {
+            'batch_size': 10,
+            'norm': float('inf'),
+            'steps': 50,
+            'attack': [FMNBase, FMNOpt]
         }
     ]
     for i, exp_params in enumerate(exps):

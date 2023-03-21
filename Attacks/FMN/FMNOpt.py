@@ -66,6 +66,7 @@ class FMNOpt(Attack):
         self.epsilon_per_iter = []
         self.delta_per_iter = []
         self.loss_per_iter = []
+        self.distance_to_boundary_per_iter = []
 
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -183,16 +184,26 @@ class FMNOpt(Attack):
 
             # TODO: move this params retrieval to another function
             _epsilon = epsilon.clone()
-            _loss = -loss.clone().sum().detach().numpy()
+            _loss = loss.clone().sum()
             _delta = delta.clone().detach().numpy()
+            if self.norm != 0:
+                _distance_boundary = distance_to_boundary.clone()
+                self.distance_to_boundary_per_iter.append(
+                    torch.linalg.norm(
+                        _distance_boundary,
+                        ord=self.norm
+                    ))
             self.epsilon_per_iter.append(
                 torch.linalg.norm(
                     _epsilon,
                     ord=self.norm
                 ))
             self.delta_per_iter.append(_delta)
-            self.loss_per_iter.append(_loss)
+            self.loss_per_iter.append(_loss.item())
 
             del _epsilon, _loss, _delta
+
+            if self.norm != 0:
+                del _distance_boundary
 
         return self.init_trackers['best_adv']

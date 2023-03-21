@@ -63,6 +63,7 @@ class FMNBase(Attack):
         self.epsilon_per_iter = []
         self.delta_per_iter = []
         self.loss_per_iter = []
+        self.distance_to_boundary_per_iter = []
 
     def _boundary_search(self):
         _, _, mid_point = self._dual_projection_mid_points[self.norm]
@@ -168,15 +169,26 @@ class FMNBase(Attack):
             delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
 
             _epsilon = epsilon.clone()
-            _loss = loss.clone().sum().detach().numpy()
+            _loss = -loss.clone().sum()
             _delta = delta.clone().detach().numpy()
+            if self.norm != 0:
+                _distance_boundary = distance_to_boundary.clone()
+                self.distance_to_boundary_per_iter.append(
+                    torch.linalg.norm(
+                        _distance_boundary,
+                        ord=self.norm
+                    ))
             self.epsilon_per_iter.append(
                 torch.linalg.norm(
                     _epsilon,
                     ord=self.norm
                 ))
-            self.delta_per_iter.append(delta)
-            self.loss_per_iter.append(loss.sum().detach().numpy())
+            self.delta_per_iter.append(_delta)
+            self.loss_per_iter.append(_loss.item())
 
+            del _epsilon, _loss, _delta
+
+            if self.norm != 0:
+                del _distance_boundary
 
         return self.init_trackers['best_adv']

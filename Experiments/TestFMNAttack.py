@@ -58,7 +58,8 @@ class TestFMNAttack(TestAttack):
         plot_loss_epsilon_over_steps(
             self.attack.loss_per_iter,
             self.attack.epsilon_per_iter,
-            self.steps,
+            distance_to_boundary=self.attack.distance_to_boundary_per_iter,
+            steps=self.steps,
             norm=self.norm,
             attack_name=self.attack.__class__.__name__,
             model_name=self.model.__class__.__name__,
