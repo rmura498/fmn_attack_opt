@@ -1,5 +1,6 @@
 import torch
 import torchvision
+from Experiments.TestAutoAttack import TestAutoAttack
 from torch import nn
 
 from Models.SmallCNN import SmallCNN
@@ -9,10 +10,10 @@ from Experiments.TestFMNAttack import TestFMNAttack
 from Attacks.FMN.FMNBase import FMNBase
 from Attacks.FMN.FMNOpt import FMNOpt
 
-from robustbench.model_zoo.architectures.dm_wide_resnet import CIFAR100_STD, CIFAR100_MEAN, DMWideResNet
 from robustbench.utils import load_model
+from robustbench.model_zoo.architectures.dm_wide_resnet import CIFAR100_STD, CIFAR100_MEAN, DMWideResNet
 
-if __name__=='__main__':
+if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     '''
     model_params_path = download_model(model='Wang2023Better_WRN-70-16')
@@ -35,28 +36,34 @@ if __name__=='__main__':
                                             transform=torchvision.transforms.ToTensor())
     '''
 
-    cifar100_test=torchvision.datasets.CIFAR100('./data',
-                                                train=False,
-                                                download=True,
-                                                transform=torchvision.transforms.ToTensor())
-                                                
-
+    # ----------------------------------------------------------------------------------------
+    cifar10_test = torchvision.datasets.CIFAR10('./data',
+                                                  train=False,
+                                                  download=True,
+                                                  transform=torchvision.transforms.ToTensor())
 
     # model_params_path = download_model(model='Wang2023Better_WRN-70-16')
     model = load_model(
         model_name='Wang2023Better_WRN-70-16',
-        dataset='cifar_100',
+        dataset='cifar10',
         norm='Linf'
     )
-    #model.load_state_dict(torch.load(model_params_path, map_location=device))
+    # model.load_state_dict(torch.load(model_params_path, map_location=device))
     model.eval()
 
     exps = [
         {
-            'batch_size': 20,
-            'norm': 2,
+            'batch_size': 1,
+            'norm': float('inf'),
             'steps': 10,
             'attack': [FMNOpt, ]
+        }]
+    exps_AA = [
+        {
+            'batch_size': 1,
+            'norm': float('inf'),
+            'steps': 10,
+            'attack': ['apgd-ce', 'apgd-dlr']
         }
     ]
 
@@ -66,10 +73,23 @@ if __name__=='__main__':
 
         for attack in exp_params['attack']:
             exp = TestFMNAttack(model,
-                                cifar100_test,
+                                cifar10_test,
                                 attack=attack,
                                 steps=exp_params['steps'],
                                 norm=exp_params['norm'],
                                 batch_size=exp_params['batch_size'])
             exp.run()
             exp.plot(normalize=True)
+
+    for i, exp_params in enumerate(exps_AA):
+        print(f"\nRunning experiment #{i}--")
+        print(f"\t{exp_params}")
+
+        for attack in exp_params['attack']:
+            exp = TestAutoAttack(model,
+                                cifar10_test,
+                                attack=attack,
+                                steps=exp_params['steps'],
+                                norm=exp_params['norm'],
+                                batch_size=exp_params['batch_size'])
+            exp.run()

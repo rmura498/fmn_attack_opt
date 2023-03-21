@@ -1,5 +1,5 @@
 from .TestAttack import TestAttack
-
+from Experiments.TestAutoAttack import TestAutoAttack
 from Attacks.FMN.FMNOpt import FMNOpt
 from Attacks.FMN.FMNBase import FMNBase
 
@@ -56,7 +56,8 @@ class TestFMNAttack(TestAttack):
         standard_acc = accuracy(self.model, self.samples, self.labels)
         model_robust_acc = accuracy(self.model, advs, self.labels)
         print("Standard Accuracy", standard_acc)
-        print("Robust accuracy: ", model_robust_acc)
+        print("[FMN] Robust accuracy: ", model_robust_acc)
+
 
     def plot(self, normalize=False):
         plot_loss_epsilon_over_steps(
