@@ -56,7 +56,7 @@ if __name__ == '__main__':
         {
             'batch_size': 10,
             'norm': 2,
-            'steps': 50,
+            'steps': 60,
             'attack': [FMNOpt, ]
         }
     ]

@@ -54,6 +54,7 @@ class TestFMNAttack(TestAttack):
             self.attack.optimizer = optimizer
             self.attack.scheduler = scheduler
 
+        self.standard_accuracy = None
         self.robust_accuracy = None
 
     def run(self):
@@ -64,6 +65,7 @@ class TestFMNAttack(TestAttack):
         print("Standard Accuracy", standard_acc)
         print("[FMN] Robust accuracy: ", model_robust_acc)
 
+        self.standard_accuracy = standard_acc
         self.robust_accuracy = model_robust_acc
 
     def plot(self, normalize=True, translate_loss=True, translate_distance=True):
@@ -84,13 +86,16 @@ class TestFMNAttack(TestAttack):
     def save_data(self):
         epsilon_mean = np.mean(self.attack.epsilon_per_iter)
         loss_mean = np.mean(self.attack.loss_per_iter)
-        robust_acc = self.robust_accuracy
+
+        _data = [
+            f"Norm: {self.norm}",
+            f"Epsilon mean: {epsilon_mean}",
+            f"Loss mean: {loss_mean}",
+            f"Standard acc: {self.standard_accuracy}"
+            f"Robust acc: {self.robust_accuracy}",
+        ]
 
         print("Saving experiment data...")
         data_file_path = os.path.join(self.exp_path, "data.txt")
         with open(data_file_path, "w+") as file:
-            file.writelines(f"Steps: {self.steps}\n\
-            Norm: {self.norm}\n\
-            Epsilon mean: {epsilon_mean}\n\
-            Loss mean: {loss_mean}\n\
-            Robust acc: {robust_acc}%")
+            file.writelines(_data)

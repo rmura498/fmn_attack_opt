@@ -25,9 +25,10 @@ class TestAttack(ABC):
         # Create experiment folder
         self.attack_name = self.attack.__name__
         self.model_name = self.model.__class__.__name__
+        self.dataset_name = self.dataset.__class__.__name__
 
         time = datetime.now().strftime("%d%H%M")
-        experiment = f'Exp_{time}_{self.attack_name}_{self.model_name}'
+        experiment = f'Exp_{time}_{self.attack_name}_{self.model_name}_{self.dataset_name}'
         path = os.path.join("Experiments", experiment)
         if not os.path.exists(path):
             os.makedirs(path)
