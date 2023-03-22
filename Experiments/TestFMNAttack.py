@@ -58,8 +58,7 @@ class TestFMNAttack(TestAttack):
         print("Standard Accuracy", standard_acc)
         print("[FMN] Robust accuracy: ", model_robust_acc)
 
-
-    def plot(self, normalize=False):
+    def plot(self, normalize=True, translate_loss=True, translate_distance=True):
         plot_loss_epsilon_over_steps(
             self.attack.loss_per_iter,
             self.attack.epsilon_per_iter,
@@ -68,6 +67,8 @@ class TestFMNAttack(TestAttack):
             norm=self.norm,
             attack_name=self.attack.__class__.__name__,
             model_name=self.model.__class__.__name__,
-            normalize=normalize
+            normalize=normalize,
+            translate_loss=translate_loss,
+            translate_distance=translate_distance
         )
 

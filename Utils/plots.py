@@ -1,3 +1,6 @@
+from datetime import datetime
+import os.path
+
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,17 +23,22 @@ def plot_loss_epsilon_over_steps(loss=None,
                                  norm=None,
                                  attack_name='attack',
                                  model_name='model',
-                                 normalize=True):
+                                 normalize=True,
+                                 translate_loss=True,
+                                 translate_distance=True):
 
     if normalize:
         if loss is not None:
             loss = normalize_01(loss)
-            loss = loss - loss.mean()
+            if translate_loss:
+                loss = loss - loss.mean()
         if epsilon is not None:
             epsilon = normalize_01(epsilon)
 
         if norm != 0 and distance_to_boundary is not None:
             distance_to_boundary = normalize_01(distance_to_boundary)
+            if translate_distance:
+                distance_to_boundary = distance_to_boundary - distance_to_boundary.mean()
 
     fig1, ax1 = plt.subplots()
     if loss is not None:
@@ -54,7 +62,18 @@ def plot_loss_epsilon_over_steps(loss=None,
     ax1.grid()
     ax1.set_xlabel("Steps")
     ax1.set_ylabel("Loss/Epsilon/Distance to boundary")
-    ax1.title.set_text(f"Attack: {attack_name}, Model: {model_name}, Norm: {norm}")
+    ax1.title.set_text(f"Attack: {attack_name}, Model: {model_name}")
     fig1.legend()
+    fig1.suptitle(f"Steps: {steps}, Norm: {norm}")
 
     plt.show()
+
+    time = datetime.now().strftime("%d%H%M")
+    path = os.path.join("Experiments", "Plots")
+    experiment = f'Exp_{time}_{attack_name}_{model_name}'
+    path = os.path.join(path, experiment)
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    plot_name = f'plot_{steps}_{norm}'
+    fig1.savefig(os.path.join(path, f"{plot_name}.png"))

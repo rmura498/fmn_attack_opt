@@ -38,12 +38,13 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------------------------
     cifar10_test = torchvision.datasets.CIFAR10('./data',
-                                                  train=False,
-                                                  download=True,
-                                                  transform=torchvision.transforms.ToTensor())
+                                                train=False,
+                                                download=True,
+                                                transform=torchvision.transforms.ToTensor())
 
     # model_params_path = download_model(model='Wang2023Better_WRN-70-16')
     model = load_model(
+        model_dir="./Models/pretrained",
         model_name='Wang2023Better_WRN-70-16',
         dataset='cifar10',
         norm='Linf'
@@ -53,22 +54,25 @@ if __name__ == '__main__':
 
     exps = [
         {
-            'batch_size': 1,
+            'batch_size': 10,
             'norm': float('inf'),
             'steps': 10,
             'attack': [FMNOpt, ]
-        }]
-    exps_AA = [
-        {
-            'batch_size': 1,
-            'norm': float('inf'),
-            'steps': 10,
-            'attack': ['apgd-ce', 'apgd-dlr']
         }
     ]
+    autoattack_test = False
+
+    if autoattack_test:
+        for exp_params in exps:
+            AA = TestAutoAttack(model=model,
+                                dataset=cifar10_test,
+                                batch_size=exp_params['batch_size'],
+                                norm=exp_params['norm'],
+                                steps=exp_params['steps'])
+            AA.run()
 
     for i, exp_params in enumerate(exps):
-        print(f"\nRunning experiment #{i}--")
+        print(f"\nRunning experiment #{i}")
         print(f"\t{exp_params}")
 
         for attack in exp_params['attack']:
@@ -79,17 +83,4 @@ if __name__ == '__main__':
                                 norm=exp_params['norm'],
                                 batch_size=exp_params['batch_size'])
             exp.run()
-            exp.plot(normalize=True)
-
-    for i, exp_params in enumerate(exps_AA):
-        print(f"\nRunning experiment #{i}--")
-        print(f"\t{exp_params}")
-
-        for attack in exp_params['attack']:
-            exp = TestAutoAttack(model,
-                                cifar10_test,
-                                attack=attack,
-                                steps=exp_params['steps'],
-                                norm=exp_params['norm'],
-                                batch_size=exp_params['batch_size'])
-            exp.run()
+            exp.plot()
