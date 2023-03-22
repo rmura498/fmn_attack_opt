@@ -2,6 +2,7 @@ from .TestAttack import TestAttack
 from autoattack import AutoAttack
 
 import torch
+import os
 
 from Utils.metrics import accuracy
 
@@ -37,14 +38,36 @@ class TestAutoAttack(TestAttack):
         }
         self.norm = _norm_conv[str(self.norm)]
 
+        self.standard_accuracy = None
+        self.robust_accuracy = None
+
     def run(self):
         adversary = AutoAttack(self.model, norm=self.norm,
                                eps=8 / 255, version='custom',
                                attacks_to_run=self.attack, device='cpu')
         adversary.apgd.n_restarts = 1
         advs = adversary.run_standard_evaluation(self.samples, self.labels)
+
+        standard_acc = accuracy(self.model, self.samples, self.labels)
         model_robust_acc = accuracy(self.model, advs, self.labels)
         print("[AA] Robust accuracy: ", model_robust_acc)
 
+        self.standard_accuracy = standard_acc
+        self.robust_accuracy = model_robust_acc
+
     def plot(self):
         pass
+
+    def save_data(self):
+        _data = [
+            f"Steps: {self.steps}\n",
+            f"Batch size: {self.batch_size}\n",
+            f"Norm: {self.norm}\n",
+            f"Standard acc: {self.standard_accuracy}\n"
+            f"Robust acc: {self.robust_accuracy}\n",
+        ]
+
+        print("Saving experiment data...")
+        data_file_path = os.path.join(self.exp_path, "data.txt")
+        with open(data_file_path, "w+") as file:
+            file.writelines(_data)
