@@ -88,11 +88,11 @@ class TestFMNAttack(TestAttack):
         loss_mean = np.mean(self.attack.loss_per_iter)
 
         _data = [
-            f"Norm: {self.norm}",
-            f"Epsilon mean: {epsilon_mean}",
-            f"Loss mean: {loss_mean}",
-            f"Standard acc: {self.standard_accuracy}"
-            f"Robust acc: {self.robust_accuracy}",
+            f"Norm: {self.norm}\n",
+            f"Epsilon mean: {epsilon_mean}\m",
+            f"Loss mean: {loss_mean}\n",
+            f"Standard acc: {self.standard_accuracy}\n"
+            f"Robust acc: {self.robust_accuracy}\n",
         ]
 
         print("Saving experiment data...")
