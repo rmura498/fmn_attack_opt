@@ -89,7 +89,7 @@ class TestFMNAttack(TestAttack):
 
         _data = [
             f"Norm: {self.norm}\n",
-            f"Epsilon mean: {epsilon_mean}\m",
+            f"Epsilon mean: {epsilon_mean}\n",
             f"Loss mean: {loss_mean}\n",
             f"Standard acc: {self.standard_accuracy}\n"
             f"Robust acc: {self.robust_accuracy}\n",
