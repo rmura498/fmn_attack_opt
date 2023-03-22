@@ -27,3 +27,7 @@ class TestAttack(ABC):
     @abstractmethod
     def plot(self):
         pass
+
+    @abstractmethod
+    def save_data(self):
+        pass
