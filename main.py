@@ -47,7 +47,7 @@ if __name__ == '__main__':
         model_dir="./Models/pretrained",
         model_name='Wang2023Better_WRN-70-16',
         dataset='cifar10',
-        norm='Linf'
+        norm='L2'
     )
     # model.load_state_dict(torch.load(model_params_path, map_location=device))
     model.eval()
@@ -55,8 +55,8 @@ if __name__ == '__main__':
     exps = [
         {
             'batch_size': 10,
-            'norm': float('inf'),
-            'steps': 10,
+            'norm': 2,
+            'steps': 50,
             'attack': [FMNOpt, ]
         }
     ]
@@ -84,3 +84,4 @@ if __name__ == '__main__':
                                 batch_size=exp_params['batch_size'])
             exp.run()
             exp.plot()
+            exp.save_data()

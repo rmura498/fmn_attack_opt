@@ -124,7 +124,7 @@ class FMNOpt(Attack):
 
         print("Starting the attack...\n")
         for i in range(self.steps):
-            print(f"Attack completion: {i/self.steps *100}%")
+            print(f"Attack completion: {i/self.steps *100:.2f}%")
             self.optimizer.zero_grad()
 
             cosine = (1 + math.cos(math.pi * i / self.steps)) / 2

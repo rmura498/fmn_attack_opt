@@ -1,3 +1,5 @@
+import os.path
+
 from .TestAttack import TestAttack
 from Experiments.TestAutoAttack import TestAutoAttack
 from Attacks.FMN.FMNOpt import FMNOpt
@@ -9,6 +11,8 @@ from Utils.plots import plot_loss_epsilon_over_steps
 import torch
 from torch.optim import SGD
 from torch.optim.lr_scheduler import CosineAnnealingLR
+
+import numpy as np
 
 
 class TestFMNAttack(TestAttack):
@@ -50,6 +54,8 @@ class TestFMNAttack(TestAttack):
             self.attack.optimizer = optimizer
             self.attack.scheduler = scheduler
 
+        self.robust_accuracy = None
+
     def run(self):
         advs = self.attack.run()
 
@@ -58,7 +64,7 @@ class TestFMNAttack(TestAttack):
         print("Standard Accuracy", standard_acc)
         print("[FMN] Robust accuracy: ", model_robust_acc)
 
-
+        self.robust_accuracy = model_robust_acc
 
     def plot(self, normalize=True, translate_loss=True, translate_distance=True):
         plot_loss_epsilon_over_steps(
@@ -67,10 +73,24 @@ class TestFMNAttack(TestAttack):
             distance_to_boundary=self.attack.distance_to_boundary_per_iter,
             steps=self.steps,
             norm=self.norm,
-            attack_name=self.attack.__class__.__name__,
-            model_name=self.model.__class__.__name__,
+            attack_name=self.attack_name,
+            model_name=self.model_name,
             normalize=normalize,
             translate_loss=translate_loss,
-            translate_distance=translate_distance
+            translate_distance=translate_distance,
+            path=self.exp_path
         )
 
+    def save_data(self):
+        epsilon_mean = np.mean(self.attack.epsilon_per_iter)
+        loss_mean = np.mean(self.attack.loss_per_iter)
+        robust_acc = self.robust_accuracy
+
+        print("Saving experiment data...")
+        data_file_path = os.path.join(self.exp_path, "data.txt")
+        with open(data_file_path, "w+") as file:
+            file.writelines(f"Steps: {self.steps}\n\
+            Norm: {self.norm}\n\
+            Epsilon mean: {epsilon_mean}\n\
+            Loss mean: {loss_mean}\n\
+            Robust acc: {robust_acc}%")

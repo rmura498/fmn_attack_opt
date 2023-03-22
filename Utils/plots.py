@@ -1,5 +1,5 @@
-from datetime import datetime
 import os.path
+from datetime import datetime
 
 import torch
 import numpy as np
@@ -25,7 +25,8 @@ def plot_loss_epsilon_over_steps(loss=None,
                                  model_name='model',
                                  normalize=True,
                                  translate_loss=True,
-                                 translate_distance=True):
+                                 translate_distance=True,
+                                 path="."):
 
     if normalize:
         if loss is not None:
@@ -68,12 +69,15 @@ def plot_loss_epsilon_over_steps(loss=None,
 
     plt.show()
 
-    time = datetime.now().strftime("%d%H%M")
-    path = os.path.join("Experiments", "Plots")
-    experiment = f'Exp_{time}_{attack_name}_{model_name}'
-    path = os.path.join(path, experiment)
-    if not os.path.exists(path):
-        os.makedirs(path)
+    '''
+    if path is None:
+        time = datetime.now().strftime("%d%H%M")
+        path = os.path.join("Experiments", "Plots")
+        experiment = f'Exp_{time}_{attack_name}_{model_name}'
+        path = os.path.join(path, experiment)
+        if not os.path.exists(path):
+            os.makedirs(path)
+    '''
 
     plot_name = f'plot_{steps}_{norm}'
     fig1.savefig(os.path.join(path, f"{plot_name}.png"))

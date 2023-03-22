@@ -1,3 +1,5 @@
+import os
+from datetime import datetime
 from abc import ABC, abstractmethod
 
 
@@ -19,6 +21,18 @@ class TestAttack(ABC):
         self.batch_size = batch_size
         self.optimizer = optimizer
         self.scheduler = scheduler
+
+        # Create experiment folder
+        self.attack_name = self.attack.__name__
+        self.model_name = self.model.__class__.__name__
+
+        time = datetime.now().strftime("%d%H%M")
+        experiment = f'Exp_{time}_{self.attack_name}_{self.model_name}'
+        path = os.path.join("Experiments", experiment)
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        self.exp_path = path
 
     @abstractmethod
     def run(self):
