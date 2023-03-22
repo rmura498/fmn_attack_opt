@@ -38,7 +38,7 @@ class TestFMNAttack(TestAttack):
 
         self.dl_test = torch.utils.data.DataLoader(dataset,
                                                    batch_size=self.batch_size,
-                                                   shuffle=True)
+                                                   shuffle=False)
         self.samples, self.labels = next(iter(self.dl_test))
         # TODO: create a function where samples, labels are dropped
 
@@ -88,6 +88,8 @@ class TestFMNAttack(TestAttack):
         loss_mean = np.mean(self.attack.loss_per_iter)
 
         _data = [
+            f"Steps: {self.steps}\n",
+            f"Batch size: {self.batch_size}\n",
             f"Norm: {self.norm}\n",
             f"Epsilon mean: {epsilon_mean}\n",
             f"Loss mean: {loss_mean}\n",
