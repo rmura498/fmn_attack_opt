@@ -10,7 +10,7 @@ from typing import Optional
 from Attacks.Attack import Attack
 from Utils.projections import l0_projection_, l1_projection_, l2_projection_, linf_projection_
 from Utils.projections import l0_mid_points, l1_mid_points, l2_mid_points, linf_mid_points
-from Utils.metrics import difference_of_logits
+from Utils.metrics import difference_of_logits, loss_fmn_fn
 
 
 class FMNOpt(Attack):
@@ -22,6 +22,7 @@ class FMNOpt(Attack):
                  norm: float,
                  targeted: bool = False,
                  steps: int = 10,
+                 epsilon_init = None,
                  alpha_init: float = 1.0,
                  alpha_final: Optional[float] = None,
                  gamma_init: float = 0.05,
@@ -37,6 +38,7 @@ class FMNOpt(Attack):
         self.norm = norm
         self.targeted = targeted
         self.steps = steps
+        self.epsilon_init = epsilon_init
         self.alpha_init = alpha_init
         self.alpha_final = self.alpha_init / 100 if alpha_final is None else alpha_final
         self.gamma_init = gamma_init
@@ -92,21 +94,24 @@ class FMNOpt(Attack):
         return epsilon, delta, is_adv
 
     def _init_attack(self):
-        epsilon = None
-        delta = None
+        if self.epsilon_init is not None:
+            epsilon = torch.full((self.batch_size,), self.epsilon_init, device=self.device)
+        else:
+            epsilon = self.epsilon_init
+
+        delta = torch.zeros_like(self.inputs)
         is_adv = None
 
         if self.starting_points is not None:
             epsilon, delta, is_adv = self._boundary_search()
-        else:
-            delta = torch.zeros_like(self.inputs)
-
-        if self.norm == 0:
-            epsilon = torch.ones(self.batch_size, device=self.device) if self.starting_points is None else delta.flatten(1).norm(p=0, dim=0)
-        else:
-            epsilon = torch.full((self.batch_size,), float('inf'), device=self.device)
 
         delta.requires_grad_(True)
+
+        if epsilon is None:
+            if self.norm == 0:
+                epsilon = torch.ones(self.batch_size, device=self.device) if self.starting_points is None else delta.flatten(1).norm(p=0, dim=0)
+            else:
+                epsilon = torch.full((self.batch_size,), float('inf'), device=self.device)
 
         return epsilon, delta, is_adv
 
@@ -117,7 +122,7 @@ class FMNOpt(Attack):
         dual, projection, mid_point = self._dual_projection_mid_points[self.norm]
 
         # Initialize optimizer and scheduler
-        self.optimizer = self.optimizer([delta], lr=self.alpha_init)
+        self.optimizer = self.optimizer([delta], lr=self.alpha_init, momentum=0.9)
         self.scheduler = self.scheduler(self.optimizer,
                                         T_max=self.steps,
                                         eta_min=self.alpha_final)
@@ -132,8 +137,10 @@ class FMNOpt(Attack):
 
             delta_norm = delta.data.flatten(1).norm(p=self.norm, dim=1)
             adv_inputs = self.inputs + delta
+
             logits = self.model(adv_inputs)
             pred_labels = logits.argmax(dim=1)
+
 
             if i == 0:
                 labels_infhot = torch.zeros_like(logits).scatter_(1, self.labels.unsqueeze(1), float('inf'))
@@ -142,6 +149,7 @@ class FMNOpt(Attack):
             logit_diffs = logit_diff_func(logits=logits)
             loss = -(multiplier * logit_diffs)
             loss.sum().backward()
+
             delta_grad = delta.grad.data
 
             is_adv = (pred_labels == self.labels) if self.targeted else (pred_labels != self.labels)

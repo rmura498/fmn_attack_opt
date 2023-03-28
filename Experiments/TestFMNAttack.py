@@ -9,7 +9,7 @@ from Utils.metrics import accuracy
 from Utils.plots import plot_loss_epsilon_over_steps
 
 import torch
-from torch.optim import SGD
+from torch.optim import SGD, Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
 import numpy as np
@@ -23,8 +23,9 @@ class TestFMNAttack(TestAttack):
                  norm=0,
                  steps=10,
                  batch_size=10,
-                 optimizer=SGD,
-                 scheduler=CosineAnnealingLR):
+                 optimizer='SGD',
+                 scheduler=CosineAnnealingLR,
+                 epsilon_init=None):
         super().__init__(
             model,
             dataset,
@@ -36,22 +37,27 @@ class TestFMNAttack(TestAttack):
             scheduler
         )
 
+        self._optimizers = {
+            'SGD': SGD,
+            'Adam': Adam
+        }
+
         self.dl_test = torch.utils.data.DataLoader(dataset,
                                                    batch_size=self.batch_size,
                                                    shuffle=False)
         self.samples, self.labels = next(iter(self.dl_test))
-        # TODO: create a function where samples, labels are dropped
 
         self.attack = self.attack(
             model=self.model,
             inputs=self.samples.clone(),
             labels=self.labels,
             norm=self.norm,
-            steps=self.steps
+            steps=self.steps,
+            epsilon_init=epsilon_init
         )
 
         if hasattr(self.attack, 'optimizer') and hasattr(self.attack, 'scheduler'):
-            self.attack.optimizer = optimizer
+            self.attack.optimizer = self._optimizers[optimizer]
             self.attack.scheduler = scheduler
 
         self.standard_accuracy = None
@@ -74,9 +80,11 @@ class TestFMNAttack(TestAttack):
             self.attack.epsilon_per_iter,
             distance_to_boundary=self.attack.distance_to_boundary_per_iter,
             steps=self.steps,
+            batch_size=self.batch_size,
             norm=self.norm,
             attack_name=self.attack_name,
             model_name=self.model_name,
+            optimizer=self.optimizer,
             normalize=normalize,
             translate_loss=translate_loss,
             translate_distance=translate_distance,

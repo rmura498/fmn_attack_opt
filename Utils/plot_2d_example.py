@@ -114,6 +114,8 @@ p = np.inf
 stepsize = 0.3
 steps = 30
 target = False
+
+# --------- compute target values ------
 if target is not False:
     target_classes = (labels + 1) % n_classes * target
     criterion = fb.criteria.TargetedMisclassification(target_classes)
@@ -121,6 +123,7 @@ if target is not False:
 else:
     criterion = fb.criteria.Misclassification(labels)
     target_classes = labels
+# -------------------------------------
 
 use_init = False
 if use_init:
@@ -156,6 +159,7 @@ def loss_fn(inputs, labels, model, targeted):
 
     logits = ep.astensor(model(inputs))
 
+    # questo sarebbe sostituito dal multiplier
     if targeted is False:
         c_minimize = best_other_classes(logits, labels)
         c_maximize = labels  # target_classes
@@ -163,7 +167,7 @@ def loss_fn(inputs, labels, model, targeted):
         c_minimize = labels  # labels
         c_maximize = best_other_classes(logits, labels)
 
-    loss = logits[:, c_minimize] - logits[:, c_maximize]
+    loss = logits[:, c_minimize] - logits[:, c_maximize] # funzione di differenza
 
     return -loss.sum().item()
 
