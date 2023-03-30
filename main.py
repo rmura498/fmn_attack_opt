@@ -43,12 +43,11 @@ if __name__ == '__main__':
 
     exps = [
         {
-            'batch_size': 10,
+            'batch_size': 5,
             'norm': 2,
-            'steps': 30,
+            'steps': 10,
             'attack': [FMNOpt, ],
-            'optimizer': 'SGD',
-            'epsilon': 8/255
+            'optimizer': 'SGD'
         }
     ]
     autoattack_test = False
@@ -74,8 +73,7 @@ if __name__ == '__main__':
                                 steps=exp_params['steps'],
                                 norm=exp_params['norm'],
                                 batch_size=exp_params['batch_size'],
-                                optimizer=exp_params['optimizer'],
-                                epsilon_init=exp_params['epsilon'])
+                                optimizer=exp_params['optimizer'])
             exp.run()
-            exp.plot()
+            # exp.plot()
             exp.save_data()
