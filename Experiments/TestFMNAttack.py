@@ -1,4 +1,5 @@
 import os.path
+import pickle
 
 from .TestAttack import TestAttack
 from Experiments.TestAutoAttack import TestAutoAttack
@@ -92,20 +93,29 @@ class TestFMNAttack(TestAttack):
         )
 
     def save_data(self):
-        epsilon_mean = np.mean(self.attack.epsilon_per_iter)
-        loss_mean = np.mean(self.attack.loss_per_iter)
-
         _data = [
             f"Steps: {self.steps}\n",
             f"Batch size: {self.batch_size}\n",
             f"Norm: {self.norm}\n",
-            f"Epsilon mean: {epsilon_mean}\n",
-            f"Loss mean: {loss_mean}\n",
             f"Standard acc: {self.standard_accuracy}\n"
             f"Robust acc: {self.robust_accuracy}\n",
+            f"Optimizer: {self.optimizer}\n",
+            f"Scheduler: {self.scheduler}\n",
+            f"Model: {self.model_name}\n"
         ]
 
         print("Saving experiment data...")
-        data_file_path = os.path.join(self.exp_path, "data.txt")
-        with open(data_file_path, "w+") as file:
+        data_path = os.path.join(self.exp_path, "data.txt")
+        with open(data_path, "w+") as file:
             file.writelines(_data)
+
+        # Save attack lists
+        data_path = os.path.join(self.exp_path, "labels.pkl")
+        with open(data_path, "wb") as file:
+            pickle.dump(self.labels, file)
+
+        for attack_list in self.attack.attack_data:
+            data_path = os.path.join(self.exp_path, f"{attack_list}.pkl")
+
+            with open(data_path, "wb") as file:
+                pickle.dump(self.attack.attack_data[attack_list], file)
