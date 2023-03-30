@@ -3,19 +3,9 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 
-from metrics import loss_fmn_fn
+from .metrics import loss_fmn_fn
 
 from secml.figure import CFigure
-
-
-def normalize_01(data):
-    min_val = np.min(data)
-    max_val = np.max(data)
-
-    if min_val == max_val:
-        return np.divide(data, 100)
-    else:
-        return (data - np.min(data)) / (np.max(data) - np.min(data))
 
 
 def plot_loss_epsilon_over_steps(loss=None,
@@ -27,23 +17,7 @@ def plot_loss_epsilon_over_steps(loss=None,
                                  attack_name='attack',
                                  model_name='model',
                                  optimizer='-',
-                                 normalize=True,
-                                 translate_loss=True,
-                                 translate_distance=True,
                                  path="."):
-
-    if normalize:
-        if loss is not None:
-            loss = normalize_01(loss)
-            if translate_loss:
-                loss = loss - loss.mean()
-        if epsilon is not None:
-            epsilon = normalize_01(epsilon)
-
-        if norm != 0 and distance_to_boundary is not None:
-            distance_to_boundary = normalize_01(distance_to_boundary)
-            if translate_distance:
-                distance_to_boundary = distance_to_boundary - distance_to_boundary.mean()
 
     fig1, ax1 = plt.subplots()
     if loss is not None:
