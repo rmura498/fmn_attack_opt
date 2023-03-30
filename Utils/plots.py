@@ -8,6 +8,20 @@ from .metrics import loss_fmn_fn
 from secml.figure import CFigure
 
 
+def plot_epsilon_robust(epsilon_per_iter=[]):
+    if len(epsilon_per_iter) == 0:
+        return
+
+    final_eps = []
+    robust_per_iter = []
+    for exp_epsilons in epsilon_per_iter:
+        for epsilon in exp_epsilons:
+            print(epsilon, "\n")
+            robust = np.count_nonzero(epsilon > exp_epsilons[-1]) / len(epsilon)
+            print(robust, "\n")
+
+
+
 def plot_loss_epsilon_over_steps(loss=None,
                                  epsilon=None,
                                  distance_to_boundary=None,
