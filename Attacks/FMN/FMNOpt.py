@@ -65,10 +65,11 @@ class FMNOpt(Attack):
             'adv_found': torch.zeros(self.batch_size, dtype=torch.bool, device=self.device)
         }
 
-        self.epsilon_per_iter = []
-        self.delta_per_iter = []
-        self.loss_per_iter = []
-        self.distance_to_boundary_per_iter = []
+        self.attack_data = {
+            'epsilon': [],
+            'pred_labels': [],
+            'delta': []
+        }
 
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -141,7 +142,6 @@ class FMNOpt(Attack):
             logits = self.model(adv_inputs)
             pred_labels = logits.argmax(dim=1)
 
-
             if i == 0:
                 labels_infhot = torch.zeros_like(logits).scatter_(1, self.labels.unsqueeze(1), float('inf'))
                 logit_diff_func = partial(difference_of_logits, labels=self.labels, labels_infhot=labels_infhot)
@@ -192,28 +192,15 @@ class FMNOpt(Attack):
 
             self.scheduler.step()
 
-            # TODO: move this params retrieval to another function
+            # Saving data
             _epsilon = epsilon.clone()
-            _loss = loss.clone().sum()
-            _delta = delta.clone().detach().numpy()
-            if self.norm != 0:
-                _distance_boundary = distance_to_boundary.clone()
-                self.distance_to_boundary_per_iter.append(
-                    torch.linalg.norm(
-                        _distance_boundary,
-                        ord=self.norm
-                    ))
-            self.epsilon_per_iter.append(
-                torch.linalg.norm(
-                    _epsilon,
-                    ord=self.norm
-                ))
-            self.delta_per_iter.append(_delta)
-            self.loss_per_iter.append(_loss.item())
+            _pred_labels = pred_labels.clone()
+            _delta = delta.clone()
 
-            del _epsilon, _loss, _delta
+            self.attack_data['epsilon'].append(_epsilon)
+            self.attack_data['pred_labels'].append(_pred_labels)
+            self.attack_data['delta'].append(_delta)
 
-            if self.norm != 0:
-                del _distance_boundary
+            del _epsilon, _pred_labels, _delta
 
         return self.init_trackers['best_adv']
