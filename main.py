@@ -33,13 +33,6 @@ def load_dataset(dataset_name='mnist'):
 if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    '''
-    model = SmallCNN()
-    model_params_path = download_model(model='mnist_regular')
-    model.load_state_dict(torch.load(model_params_path, map_location=device))
-    model.eval()
-    '''
-
     plot_experiments = True
     autoattack_test = False
     dataset = load_dataset('cifar10')
@@ -64,7 +57,7 @@ if __name__ == '__main__':
             {
                 'batch_size': 10,
                 'norm': 2,
-                'steps': 30,
+                'steps': 50,
                 'attack': [FMNOpt, ],
                 'optimizer': 'SGD'
             }
@@ -93,7 +86,6 @@ if __name__ == '__main__':
                                     batch_size=exp_params['batch_size'],
                                     optimizer=exp_params['optimizer'])
                 exp.run()
-                # exp.plot()
                 exp.save_data()
 
     else:
@@ -118,4 +110,4 @@ if __name__ == '__main__':
 
             exps_data.append(exp_data)
 
-        plot_epsilon_robust([exp_data['epsilon'] for exp_data in exps_data], steps=30, batch_size=10)
+        plot_epsilon_robust([exp_data['epsilon'] for exp_data in exps_data])
