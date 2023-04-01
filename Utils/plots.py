@@ -6,39 +6,49 @@ import matplotlib.pyplot as plt
 from .metrics import loss_fmn_fn
 
 
-def plot_epsilon_robust(epsilon_per_iter, steps, batch_size):
-    if len(epsilon_per_iter) == 0:
+def plot_epsilon_robust(exps_epsilon_per_iter = []):
+    if len(exps_epsilon_per_iter) == 0:
         return
 
-    final_eps = []
-    robust_per_iter = []
+    # number of experiments
+    n_exps = len(exps_epsilon_per_iter)
 
-    for exp_epsilons in epsilon_per_iter:
-        for epsilon in exp_epsilons:
-            for eps in epsilon:
-                print('epsilon',epsilon, "\n")
-                robust = np.count_nonzero(eps > exp_epsilons[-1]) / len(epsilon)
-                print(robust, "\n")
-                eps=eps.numpy()
-                final_eps.append(eps/100)
-                robust_per_iter.append(robust)
-    final_eps=np.array(final_eps)
-    final_eps=np.sort(final_eps)[::-1]
-    robust_per_iter = np.sort(robust_per_iter)[::-1]
+    fig = plt.figure()
 
-    fig, axs = plt.subplots()
-    axs.plot(
-             np.linspace(1, steps*batch_size, steps*batch_size),
+    for i, exp_epsilons in enumerate(exps_epsilon_per_iter):
+        # single experiment
+        steps = len(exp_epsilons)
+        batch_size = len(exp_epsilons[0])
 
-             robust_per_iter,
-             #final_eps,
-             label='robust'
-             )
-    axs.plot(
-             np.linspace(1,steps*batch_size, steps*batch_size),
-             final_eps,
-             label='epsilon'
-             )
+        epsilons = np.array([])
+        robust_per_iter = []
+        for j, epsilon in enumerate(exp_epsilons):
+            # checking, for each step, the epsilon tensor
+            epsilons = np.concatenate((epsilons, epsilon.numpy()), axis=None)
+            robust_per_iter += [
+                (np.count_nonzero(eps > exp_epsilons[-1])/batch_size)
+                for eps in epsilon
+            ]
+
+        epsilons = np.array(epsilons)
+        epsilons /= 100
+        epsilons.sort()
+        epsilons = epsilons[::-1]
+
+        robust_per_iter.sort()
+        robust_per_iter = robust_per_iter[::-1]
+
+        ax = fig.add_subplot(n_exps, n_exps, i+1)
+        x_values = np.linspace(1, steps*batch_size, steps*batch_size)
+
+        # TODO: add single subplot title
+        ax.plot(x_values,
+                robust_per_iter,
+                label='robust')
+        ax.plot(x_values,
+                epsilons,
+                label='epsilon')
+
     fig.legend()
     plt.show()
 
