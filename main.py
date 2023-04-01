@@ -98,13 +98,14 @@ if __name__ == '__main__':
 
     else:
         experiments_path = [
-            os.path.join("Experiments", "Exp_312321_FMNOpt_DMWideResNet_CIFAR10")
+            os.path.join("Experiments", "Exp_301802_FMNOpt_DMWideResNet_CIFAR10")
         ]
 
         exps_data = []
         for exp_path in experiments_path:
             exp_data = {
                 'epsilon': [],
+                'labels': [],
                 'pred_labels': [],
                 'delta': []
             }
