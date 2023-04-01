@@ -47,6 +47,7 @@ class TestFMNAttack(TestAttack):
                                                    batch_size=self.batch_size,
                                                    shuffle=False)
         self.samples, self.labels = next(iter(self.dl_test))
+        # TODO: create a function where samples, labels are dropped
 
         self.attack = self.attack(
             model=self.model,
@@ -87,8 +88,6 @@ class TestFMNAttack(TestAttack):
             model_name=self.model_name,
             optimizer=self.optimizer,
             normalize=normalize,
-            translate_loss=translate_loss,
-            translate_distance=translate_distance,
             path=self.exp_path
         )
 

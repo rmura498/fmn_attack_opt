@@ -5,21 +5,42 @@ import matplotlib.pyplot as plt
 
 from .metrics import loss_fmn_fn
 
-from secml.figure import CFigure
 
-
-def plot_epsilon_robust(epsilon_per_iter=[]):
+def plot_epsilon_robust(epsilon_per_iter, steps, batch_size):
     if len(epsilon_per_iter) == 0:
         return
 
     final_eps = []
     robust_per_iter = []
+
     for exp_epsilons in epsilon_per_iter:
         for epsilon in exp_epsilons:
-            print(epsilon, "\n")
-            robust = np.count_nonzero(epsilon > exp_epsilons[-1]) / len(epsilon)
-            print(robust, "\n")
+            for eps in epsilon:
+                print('epsilon',epsilon, "\n")
+                robust = np.count_nonzero(eps > exp_epsilons[-1]) / len(epsilon)
+                print(robust, "\n")
+                eps=eps.numpy()
+                final_eps.append(eps/100)
+                robust_per_iter.append(robust)
+    final_eps=np.array(final_eps)
+    final_eps=np.sort(final_eps)[::-1]
+    robust_per_iter = np.sort(robust_per_iter)[::-1]
 
+    fig, axs = plt.subplots()
+    axs.plot(
+             np.linspace(1, steps*batch_size, steps*batch_size),
+
+             robust_per_iter,
+             #final_eps,
+             label='robust'
+             )
+    axs.plot(
+             np.linspace(1,steps*batch_size, steps*batch_size),
+             final_eps,
+             label='epsilon'
+             )
+    fig.legend()
+    plt.show()
 
 
 def plot_loss_epsilon_over_steps(loss=None,
@@ -32,7 +53,6 @@ def plot_loss_epsilon_over_steps(loss=None,
                                  model_name='model',
                                  optimizer='-',
                                  path="."):
-
     fig1, ax1 = plt.subplots()
     if loss is not None:
         ax1.plot(
@@ -73,7 +93,7 @@ def plot_2D_attack(clf, target, labels, n_classes):
         criterion = fb.criteria.Misclassification(labels)
         target_classes = labels
 
-    image_path = "../../../images/" # sarebbe da cambiare
+    image_path = "../../../images/"  # sarebbe da cambiare
     fig = CFigure(width=5, height=5)
 
     n_grid_pts = 20
@@ -97,4 +117,3 @@ def plot_2D_attack(clf, target, labels, n_classes):
                 format='png')
     plt.show()
     fig.close()
-

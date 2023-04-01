@@ -8,7 +8,7 @@ from torch import nn
 from Models.SmallCNN import SmallCNN
 from Models.downloadModel import download_model
 
-from Utils.plots import *
+from Utils.plots import plot_epsilon_robust
 from Experiments.TestFMNAttack import TestFMNAttack
 from Experiments.TestAutoAttack import TestAutoAttack
 from Attacks.FMN.FMNOpt import FMNOpt
@@ -62,9 +62,9 @@ if __name__ == '__main__':
 
         exps = [
             {
-                'batch_size': 5,
+                'batch_size': 10,
                 'norm': 2,
-                'steps': 10,
+                'steps': 30,
                 'attack': [FMNOpt, ],
                 'optimizer': 'SGD'
             }
@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
     else:
         experiments_path = [
-            os.path.join("Experiments", "Exp_301802_FMNOpt_DMWideResNet_CIFAR10")
+            os.path.join("Experiments", "Exp_312321_FMNOpt_DMWideResNet_CIFAR10")
         ]
 
         exps_data = []
@@ -117,4 +117,4 @@ if __name__ == '__main__':
 
             exps_data.append(exp_data)
 
-        plot_epsilon_robust([exp_data['epsilon'] for exp_data in exps_data])
+        plot_epsilon_robust([exp_data['epsilon'] for exp_data in exps_data], steps=30, batch_size=10)
