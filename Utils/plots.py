@@ -40,7 +40,6 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[], exps_names=[]):
         ax = fig.add_subplot(n_exps, n_exps, i+1)
         x_values = np.linspace(1, steps*batch_size, steps*batch_size)
 
-        # TODO: add single subplot title
         ax.plot(x_values,
                 robust_per_iter,
                 label='robust')
