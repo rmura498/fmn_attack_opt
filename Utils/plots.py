@@ -11,8 +11,8 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[], exps_names=[]):
 
     # number of experiments
     n_exps = len(exps_epsilon_per_iter)
+
     plot_grid_size = n_exps//2 + 1
-    print(plot_grid_size)
 
     fig = plt.figure()
 
@@ -61,6 +61,7 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[], exps_names=[]):
         # ax.set_xlabel("Steps*Batch")
         # ax.set_ylabel("Robust/Epsilon")
     # fig.legend()
+    plt.tight_layout()
     plt.show()
 
 
