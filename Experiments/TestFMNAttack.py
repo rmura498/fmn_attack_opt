@@ -7,7 +7,6 @@ from Attacks.FMN.FMNOpt import FMNOpt
 from Attacks.FMN.FMNBase import FMNBase
 
 from Utils.metrics import accuracy
-from Utils.plots import plot_loss_epsilon_over_steps
 
 import torch
 from torch.optim import SGD, Adam
