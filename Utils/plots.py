@@ -11,6 +11,8 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[], exps_names=[]):
 
     # number of experiments
     n_exps = len(exps_epsilon_per_iter)
+    plot_grid_size = n_exps//2 + 1
+    print(plot_grid_size)
 
     fig = plt.figure()
 
@@ -37,7 +39,7 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[], exps_names=[]):
         robust_per_iter.sort()
         robust_per_iter = robust_per_iter[::-1]
 
-        ax = fig.add_subplot(n_exps, n_exps, i+1)
+        ax = fig.add_subplot(plot_grid_size, plot_grid_size, i+1)
         x_values = np.linspace(1, steps*batch_size, steps*batch_size)
 
         ax.plot(x_values,
