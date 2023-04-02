@@ -1,12 +1,11 @@
 import os.path
-import torch
 import numpy as np
 import matplotlib.pyplot as plt
 
 from .metrics import loss_fmn_fn
 
 
-def plot_epsilon_robust(exps_epsilon_per_iter = []):
+def plot_epsilon_robust(exps_epsilon_per_iter=[], exps_names=[]):
     if len(exps_epsilon_per_iter) == 0:
         return
 
@@ -48,51 +47,25 @@ def plot_epsilon_robust(exps_epsilon_per_iter = []):
         ax.plot(x_values,
                 epsilons,
                 label='epsilon')
+        ax.legend()
 
-    fig.legend()
+        dpi = fig.dpi
+        rect_height_inch = ax.bbox.height / dpi
+        fontsize = rect_height_inch * 4
+
+        if len(exps_names) > 0:
+            ax.set_title(exps_names[i], fontsize=fontsize)
+
+        # TODO: set labels
+        # ax.set_xlabel("Steps*Batch")
+        # ax.set_ylabel("Robust/Epsilon")
+    # fig.legend()
     plt.show()
 
 
-def plot_loss_epsilon_over_steps(loss=None,
-                                 epsilon=None,
-                                 distance_to_boundary=None,
-                                 steps=10,
-                                 batch_size=10,
-                                 norm=None,
-                                 attack_name='attack',
-                                 model_name='model',
-                                 optimizer='-',
-                                 path="."):
-    fig1, ax1 = plt.subplots()
-    if loss is not None:
-        ax1.plot(
-            torch.arange(0, steps),
-            loss,
-            label="Loss"
-        )
-    if epsilon is not None:
-        ax1.plot(
-            torch.arange(0, steps),
-            epsilon,
-            label="Epsilon"
-        )
-    if norm != 0 and distance_to_boundary is not None:
-        ax1.plot(
-            torch.arange(0, steps),
-            distance_to_boundary,
-            label="Distance to boundary"
-        )
-    ax1.grid()
-    ax1.set_xlabel("Steps")
-    ax1.set_ylabel("Loss/Epsilon/Distance to boundary")
-    ax1.title.set_text(f"Attack: {attack_name}, Model: {model_name}, Optimizer: {optimizer}")
-    fig1.legend()
-    fig1.suptitle(f"Steps: {steps}, Batch: {batch_size}, Norm: {norm}")
-
-    plt.show()
-
-    plot_name = f'plot_{steps}_{norm}'
-    fig1.savefig(os.path.join(path, f"{plot_name}.png"))
+    # TODO: save the plot
+    # plot_name = f'plot_{steps}_{norm}'
+    # fig1.savefig(os.path.join(path, f"{plot_name}.png"))
 
 
 def plot_2D_attack(clf, target, labels, n_classes):
