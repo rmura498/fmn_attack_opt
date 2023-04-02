@@ -2,13 +2,14 @@ import os
 import pickle
 
 import torch
-import torchvision
 from torch import nn
 
 from Models.SmallCNN import SmallCNN
 from Models.downloadModel import download_model
 
 from Utils.plots import plot_epsilon_robust
+from Utils.datasets import load_dataset
+
 from Experiments.TestFMNAttack import TestFMNAttack
 from Experiments.TestAutoAttack import TestAutoAttack
 from Attacks.FMN.FMNOpt import FMNOpt
@@ -16,28 +17,15 @@ from Attacks.FMN.FMNOpt import FMNOpt
 from robustbench.utils import load_model
 
 
-def load_dataset(dataset_name='mnist'):
-    if dataset_name == 'mnist':
-        dataset = torchvision.datasets.MNIST('./data',
-                                                train=False,
-                                                download=True,
-                                                transform=torchvision.transforms.ToTensor())
-    elif dataset_name == 'cifar10':
-        dataset = torchvision.datasets.CIFAR10('./data',
-                                                    train=False,
-                                                    download=True,
-                                                    transform=torchvision.transforms.ToTensor())
-
-    return dataset
-
 if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    plot_experiments = True
+    plot_experiments = False
     autoattack_test = False
     dataset = load_dataset('cifar10')
 
     if not plot_experiments:
+        # TODO: move load model in Utils
         '''
         model = SmallCNN()
         model_params_path = download_model(model='mnist_regular')
@@ -57,7 +45,7 @@ if __name__ == '__main__':
             {
                 'batch_size': 10,
                 'norm': 2,
-                'steps': 50,
+                'steps': 30,
                 'attack': [FMNOpt, ],
                 'optimizer': 'SGD'
             }
