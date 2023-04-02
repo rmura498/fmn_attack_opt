@@ -89,12 +89,14 @@ if __name__ == '__main__':
                 exp.save_data()
 
     else:
-        experiments_path = [
-            os.path.join("Experiments", "Exp_301802_FMNOpt_DMWideResNet_CIFAR10")
+        experiments = [
+            "Exp_301802_FMNOpt_DMWideResNet_CIFAR10",
+            "Exp_311837_FMNOpt_DMWideResNet_CIFAR10"
         ]
 
         exps_data = []
-        for exp_path in experiments_path:
+        for exp_path in experiments:
+            exp_path = os.path.join("Experiments", exp_path)
             exp_data = {
                 'epsilon': [],
                 'labels': [],
@@ -110,4 +112,8 @@ if __name__ == '__main__':
 
             exps_data.append(exp_data)
 
-        plot_epsilon_robust([exp_data['epsilon'] for exp_data in exps_data])
+        plot_epsilon_robust(
+            exps_epsilon_per_iter=[exp_data['epsilon']
+                                   for exp_data in exps_data],
+            exps_names=experiments
+        )
