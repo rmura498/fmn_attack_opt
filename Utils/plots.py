@@ -90,18 +90,16 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[],
             ]
 
         epsilons = np.array(epsilons)
-        epsilons /= 100
-        epsilons = np.flip(np.sort(epsilons))
-
-        robust_per_iter.sort()
+        #epsilons /= 100
+        epsilons.sort()
+        robust_per_iter.sort(reverse=True)
 
         ax = fig.add_subplot(plot_grid_size, plot_grid_size, i+1)
         ax.plot(epsilons,
                 robust_per_iter,
                 label='robust')
-
-        x_ticks = np.around(np.linspace(np.min(epsilons), np.max(epsilons), num=10), 2)
-        ax.set_xticks(x_ticks)
+        #x_ticks = np.around(np.linspace(np.min(epsilons), np.max(epsilons), num=8), 2)
+        #ax.set_xticks(x_ticks)
         ax.grid()
 
         dpi = fig.dpi
