@@ -1,8 +1,9 @@
 import math
 import torch
 from torch import nn, Tensor
-from torch.optim import SGD
-from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.optim import SGD,Adam
+
+from torch.optim.lr_scheduler import CosineAnnealingLR,CosineAnnealingWarmRestarts
 
 from functools import partial
 from typing import Optional
@@ -10,7 +11,7 @@ from typing import Optional
 from Attacks.Attack import Attack
 from Utils.projections import l0_projection_, l1_projection_, l2_projection_, linf_projection_
 from Utils.projections import l0_mid_points, l1_mid_points, l2_mid_points, linf_mid_points
-from Utils.metrics import difference_of_logits, loss_fmn_fn
+from Utils.metrics import difference_of_logits
 
 
 class FMNOpt(Attack):
@@ -29,8 +30,8 @@ class FMNOpt(Attack):
                  gamma_final: float = 0.001,
                  starting_points: Optional[Tensor] = None,
                  binary_search_steps: int = 10,
-                 optimizer = SGD,
-                 scheduler = CosineAnnealingLR
+                 optimizer='SGD',
+                 scheduler=CosineAnnealingLR
                  ):
         self.model = model
         self.inputs = inputs

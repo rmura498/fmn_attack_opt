@@ -34,12 +34,15 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[], exps_names=[]):
         epsilons = np.array(epsilons)
         epsilons /= 100
         epsilons = np.flip(np.sort(epsilons))
+        print(f'epsilons sorted and flipped:{epsilons}\n')
+        epsilons = np.sort(epsilons)
+        print(f'sorted epsilons:{epsilons}')
 
         robust_per_iter.sort()
 
         ax = fig.add_subplot(plot_grid_size, plot_grid_size, i+1)
         # x_values = np.linspace(1, steps*batch_size, steps*batch_size)
-
+        ax.invert_xaxis()
         ax.plot(epsilons,
                 robust_per_iter,
                 label='robust')
@@ -48,7 +51,7 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[], exps_names=[]):
                 epsilons,
                 label='epsilon')
         '''
-        # ax.legend()
+        ax.legend(loc=0, prop={'size': 8})
 
         dpi = fig.dpi
         rect_height_inch = ax.bbox.height / dpi
