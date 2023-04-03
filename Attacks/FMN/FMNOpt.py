@@ -123,7 +123,7 @@ class FMNOpt(Attack):
         dual, projection, mid_point = self._dual_projection_mid_points[self.norm]
 
         # Initialize optimizer and scheduler
-        self.optimizer = self.optimizer([delta], lr=self.alpha_init, momentum=0.9)
+        self.optimizer = self.optimizer([delta], lr=self.alpha_init)
         self.scheduler = self.scheduler(self.optimizer,
                                         T_max=self.steps,
                                         eta_min=self.alpha_final)
