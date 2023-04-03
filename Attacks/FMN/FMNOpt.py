@@ -200,7 +200,7 @@ class FMNOpt(Attack):
 
             self.attack_data['epsilon'].append(_epsilon)
             self.attack_data['pred_labels'].append(_pred_labels)
-            self.attack_data['delta'].append(torch.linalg.norm(_delta))
+            self.attack_data['delta'].append(torch.linalg.norm(_delta).item())
 
             del _epsilon, _pred_labels, _delta
 
