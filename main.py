@@ -78,10 +78,12 @@ if __name__ == '__main__':
 
     else:
         experiments = [
-            'Exp_031738_FMNOpt_DMWideResNet_CIFAR10'
+            'Exp_031738_FMNOpt_DMWideResNet_CIFAR10',
+            'Exp_031757_FMNOpt_DMWideResNet_CIFAR10'
         ]
 
         exps_data = []
+        exps_params = []
         for exp_path in experiments:
             exp_path = os.path.join("Experiments", exp_path)
             exp_data = {
@@ -104,6 +106,8 @@ if __name__ == '__main__':
                     if any((match := substring) in _line for substring in exp_params.keys()):
                         exp_params[match] = line.split(":")[-1].strip()
 
+            exps_params.append(exp_params)
+
             for data in exp_data:
                 data_path = os.path.join(exp_path, f"{data}.pkl")
                 with open(data_path, 'rb') as file:
@@ -116,13 +120,12 @@ if __name__ == '__main__':
             exps_epsilon_per_iter=[exp_data['epsilon']
                                    for exp_data in exps_data],
             exps_names=experiments,
-            optimizer=exp_params['optimizer'],
-            scheduler=exp_params['scheduler'],
-            norm=exp_params['norm']
+            exps_params=exps_params
         )
 
         plot_distance([exp_data['epsilon']
                        for exp_data in exps_data],
                       [exp_data['delta']
                        for exp_data in exps_data],
-                      exps_names=experiments)
+                      exps_names=experiments,
+                      exps_params=exps_params)

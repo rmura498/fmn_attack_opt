@@ -10,9 +10,7 @@ from .metrics import loss_fmn_fn
 def plot_distance(exps_epsilon_per_iter=[],
                   exps_delta_per_iter=[],
                   exps_names=[],
-                  optimizer='SGD',
-                  scheduler='CosineAnnealingLR',
-                  norm=2):
+                  exps_params=[]):
     if len(exps_epsilon_per_iter) == 0:
         return
 
@@ -53,7 +51,7 @@ def plot_distance(exps_epsilon_per_iter=[],
         rect_height_inch = ax.bbox.height / dpi
         fontsize = rect_height_inch * 4
 
-        ax.set_title(f"Steps: {steps}, batch: {batch_size},\nOptimizier: {optimizer}, Scheduler: {scheduler}",
+        ax.set_title(f"Steps: {steps}, batch: {batch_size},\nOptimizier: {exps_params[i]['optimizer']}, Scheduler: {exps_params[i]['scheduler']}",
                      fontsize=fontsize)
 
         ax.set_xlabel("Steps")
@@ -66,9 +64,7 @@ def plot_distance(exps_epsilon_per_iter=[],
 
 def plot_epsilon_robust(exps_epsilon_per_iter=[],
                         exps_names=[],
-                        optimizer='SGD',
-                        scheduler='CosineAnnealingLR',
-                        norm=2):
+                        exps_params=[]):
     if len(exps_epsilon_per_iter) == 0:
         return
 
@@ -112,7 +108,7 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[],
         rect_height_inch = ax.bbox.height / dpi
         fontsize = rect_height_inch * 4
 
-        ax.set_title(f"Steps: {steps}, batch: {batch_size},\nOptimizier: {optimizer}, Scheduler: {scheduler}", fontsize=fontsize)
+        ax.set_title(f"Steps: {steps}, batch: {batch_size},\nOptimizier: {exps_params[i]['optimizer']}, Scheduler: {exps_params[i]['scheduler']}", fontsize=fontsize)
 
         ax.set_xlabel("Epsilon")
         ax.set_ylabel("Robust")
