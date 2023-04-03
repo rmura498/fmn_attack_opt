@@ -24,7 +24,7 @@ class TestFMNAttack(TestAttack):
                  steps=10,
                  batch_size=10,
                  optimizer='SGD',
-                 scheduler=CosineAnnealingLR,
+                 scheduler='CosineAnnealingLR',
                  epsilon_init=None):
         super().__init__(
             model,
@@ -37,9 +37,16 @@ class TestFMNAttack(TestAttack):
             scheduler
         )
 
+        self.optimizer_name = optimizer
+        self.scheduler_name = scheduler
+
         self._optimizers = {
             'SGD': SGD,
             'Adam': Adam
+        }
+
+        self._schedulers = {
+            'CosineAnnealingLR': CosineAnnealingLR
         }
 
         self.dl_test = torch.utils.data.DataLoader(dataset,
@@ -57,8 +64,8 @@ class TestFMNAttack(TestAttack):
         )
 
         if hasattr(self.attack, 'optimizer') and hasattr(self.attack, 'scheduler'):
-            self.attack.optimizer = self._optimizers[optimizer]
-            self.attack.scheduler = scheduler
+            self.attack.optimizer = self._optimizers[self.optimizer_name]
+            self.attack.scheduler = self._schedulers[self.scheduler_name]
 
         self.standard_accuracy = None
         self.robust_accuracy = None
@@ -96,8 +103,8 @@ class TestFMNAttack(TestAttack):
             f"Norm: {self.norm}\n",
             f"Standard acc: {self.standard_accuracy}\n"
             f"Robust acc: {self.robust_accuracy}\n",
-            f"Optimizer: {self.optimizer}\n",
-            f"Scheduler: {self.scheduler}\n",
+            f"Optimizer: {self.optimizer_name}\n",
+            f"Scheduler: {self.scheduler_name}\n",
             f"Model: {self.model_name}\n"
         ]
 
