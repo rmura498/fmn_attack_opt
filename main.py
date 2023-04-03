@@ -43,11 +43,12 @@ if __name__ == '__main__':
 
         exps = [
             {
-                'batch_size': 5,
+                'batch_size': 10,
                 'norm': 2,
-                'steps': 10,
+                'steps': 30,
                 'attack': [FMNOpt, ],
-                'optimizer': 'SGD'
+                'optimizer': 'SGD',
+                'epsilon': 8/255
             }
         ]
 
@@ -72,14 +73,17 @@ if __name__ == '__main__':
                                     steps=exp_params['steps'],
                                     norm=exp_params['norm'],
                                     batch_size=exp_params['batch_size'],
-                                    optimizer=exp_params['optimizer'])
+                                    optimizer=exp_params['optimizer'],
+                                    epsilon_init=exp_params['epsilon'])
                 exp.run()
                 exp.save_data()
+                # TODO: save best adv
 
     else:
         experiments = [
             'Exp_031738_FMNOpt_DMWideResNet_CIFAR10',
-            'Exp_031757_FMNOpt_DMWideResNet_CIFAR10'
+            'Exp_031757_FMNOpt_DMWideResNet_CIFAR10',
+            'Exp_032318_FMNOpt_DMWideResNet_CIFAR10'
         ]
 
         exps_data = []
