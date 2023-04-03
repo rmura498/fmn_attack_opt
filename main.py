@@ -6,7 +6,7 @@ from torch import nn
 
 from Models.SmallCNN import SmallCNN
 from Models.downloadModel import download_model
-from Utils.load_model import load_models
+
 from Utils.plots import plot_epsilon_robust
 from Utils.datasets import load_dataset
 
@@ -20,13 +20,12 @@ from robustbench.utils import load_model
 if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    plot_experiments = True
+    plot_experiments = False
     autoattack_test = False
     dataset = load_dataset('cifar10')
 
     if not plot_experiments:
         # TODO: move load model in Utils
-        #load_models()
         '''
         model = SmallCNN()
         model_params_path = download_model(model='mnist_regular')
@@ -41,7 +40,6 @@ if __name__ == '__main__':
         )
 
         model.eval()
-
 
         exps = [
             {
@@ -80,9 +78,8 @@ if __name__ == '__main__':
 
     else:
         experiments = [
-            "Exp_021057_FMNOpt_DMWideResNet_CIFAR10",
-            "Exp_021112_FMNOpt_DMWideResNet_CIFAR10",
-            "Exp_021125_FMNOpt_DMWideResNet_CIFAR10"
+            "Exp_301802_FMNOpt_DMWideResNet_CIFAR10",
+            "Exp_311837_FMNOpt_DMWideResNet_CIFAR10"
         ]
 
         exps_data = []
