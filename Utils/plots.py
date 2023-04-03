@@ -2,16 +2,78 @@ import os.path
 import numpy as np
 import matplotlib.pyplot as plt
 
+import torch
+
 from .metrics import loss_fmn_fn
 
 
-def plot_epsilon_robust(exps_epsilon_per_iter=[], exps_names=[]):
+def plot_distance(exps_epsilon_per_iter=[],
+                  exps_delta_per_iter=[],
+                  exps_names=[],
+                  optimizer='SGD',
+                  scheduler='CosineAnnealingLR',
+                  norm=2):
+    if len(exps_epsilon_per_iter) == 0:
+        return
+
+    # number of experiments
+    if (len(exps_epsilon_per_iter)) != (len(exps_delta_per_iter)):
+        return
+
+    n_exps = len(exps_epsilon_per_iter)
+    plot_grid_size = n_exps // 2 + 1
+    fig = plt.figure()
+
+    for i in range(n_exps):
+        exp_epsilons = exps_epsilon_per_iter[i]
+        exp_deltas = exps_delta_per_iter[i]
+
+        steps = len(exp_epsilons)
+        batch_size = len(exp_epsilons[0])
+
+        # single experiment
+        epsilons = []
+        deltas = []
+
+        for epsilon in exp_epsilons:
+            epsilons.append(torch.linalg.norm(epsilon).item())
+        for delta in exp_deltas:
+            deltas.append(delta)
+
+        ax = fig.add_subplot(plot_grid_size, plot_grid_size, i + 1)
+        ax.plot(epsilons,
+                label='epsilon')
+
+        ax.plot(deltas,
+                label='deltas')
+
+        ax.legend(loc=0, prop={'size': 8})
+
+        dpi = fig.dpi
+        rect_height_inch = ax.bbox.height / dpi
+        fontsize = rect_height_inch * 4
+
+        ax.set_title(f"Steps: {steps}, batch: {batch_size},\nOptimizier: {optimizer}, Scheduler: {scheduler}",
+                     fontsize=fontsize)
+
+        ax.set_xlabel("Steps")
+        ax.set_ylabel("Epsilon/Delta (x-x0)")
+        ax.grid()
+
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_epsilon_robust(exps_epsilon_per_iter=[],
+                        exps_names=[],
+                        optimizer='SGD',
+                        scheduler='CosineAnnealingLR',
+                        norm=2):
     if len(exps_epsilon_per_iter) == 0:
         return
 
     # number of experiments
     n_exps = len(exps_epsilon_per_iter)
-
     plot_grid_size = n_exps//2 + 1
 
     fig = plt.figure()
@@ -38,17 +100,19 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[], exps_names=[]):
         robust_per_iter.sort()
 
         ax = fig.add_subplot(plot_grid_size, plot_grid_size, i+1)
-        ax.invert_xaxis()
         ax.plot(epsilons,
                 robust_per_iter,
                 label='robust')
+
+        x_ticks = np.around(np.linspace(np.min(epsilons), np.max(epsilons), num=10), 2)
+        ax.set_xticks(x_ticks)
+        ax.grid()
 
         dpi = fig.dpi
         rect_height_inch = ax.bbox.height / dpi
         fontsize = rect_height_inch * 4
 
-        if len(exps_names) > 0:
-            ax.set_title(exps_names[i], fontsize=fontsize)
+        ax.set_title(f"Steps: {steps}, batch: {batch_size},\nOptimizier: {optimizer}, Scheduler: {scheduler}", fontsize=fontsize)
 
         ax.set_xlabel("Epsilon")
         ax.set_ylabel("Robust")
