@@ -7,7 +7,7 @@ from torch import nn
 from Models.SmallCNN import SmallCNN
 from Models.downloadModel import download_model
 
-from Utils.plots import plot_epsilon_robust
+from Utils.plots import plot_epsilon_robust, plot_distance
 from Utils.datasets import load_dataset
 
 from Experiments.TestFMNAttack import TestFMNAttack
@@ -20,7 +20,7 @@ from robustbench.utils import load_model
 if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    plot_experiments = False
+    plot_experiments = True
     autoattack_test = False
     dataset = load_dataset('cifar10')
 
@@ -43,9 +43,9 @@ if __name__ == '__main__':
 
         exps = [
             {
-                'batch_size': 10,
+                'batch_size': 5,
                 'norm': 2,
-                'steps': 30,
+                'steps': 10,
                 'attack': [FMNOpt, ],
                 'optimizer': 'SGD'
             }
@@ -78,8 +78,7 @@ if __name__ == '__main__':
 
     else:
         experiments = [
-            "Exp_301802_FMNOpt_DMWideResNet_CIFAR10",
-            "Exp_311837_FMNOpt_DMWideResNet_CIFAR10"
+            'Exp_031738_FMNOpt_DMWideResNet_CIFAR10'
         ]
 
         exps_data = []
@@ -92,6 +91,19 @@ if __name__ == '__main__':
                 'delta': []
             }
 
+            # load data.txt
+            exp_params = {
+                'optimizer': None,
+                'scheduler': None,
+                'norm': None
+            }
+            data_path = os.path.join(exp_path, "data.txt")
+            with open(data_path, 'r') as file:
+                for line in file.readlines():
+                    _line = line.lower()
+                    if any((match := substring) in _line for substring in exp_params.keys()):
+                        exp_params[match] = line.split(":")[-1].strip()
+
             for data in exp_data:
                 data_path = os.path.join(exp_path, f"{data}.pkl")
                 with open(data_path, 'rb') as file:
@@ -103,5 +115,14 @@ if __name__ == '__main__':
         plot_epsilon_robust(
             exps_epsilon_per_iter=[exp_data['epsilon']
                                    for exp_data in exps_data],
-            exps_names=experiments
+            exps_names=experiments,
+            optimizer=exp_params['optimizer'],
+            scheduler=exp_params['scheduler'],
+            norm=exp_params['norm']
         )
+
+        plot_distance([exp_data['epsilon']
+                       for exp_data in exps_data],
+                      [exp_data['delta']
+                       for exp_data in exps_data],
+                      exps_names=experiments)
