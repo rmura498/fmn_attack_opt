@@ -81,9 +81,8 @@ if __name__ == '__main__':
 
     else:
         experiments = [
-            'Exp_031738_FMNOpt_DMWideResNet_CIFAR10',
-            'Exp_031757_FMNOpt_DMWideResNet_CIFAR10',
-            'Exp_032318_FMNOpt_DMWideResNet_CIFAR10'
+            'Exp_041315_FMNOpt_DMWideResNet_CIFAR10',
+            'Exp_041331_FMNOpt_DMWideResNet_CIFAR10'
         ]
 
         exps_data = []
@@ -92,9 +91,10 @@ if __name__ == '__main__':
             exp_path = os.path.join("Experiments", exp_path)
             exp_data = {
                 'epsilon': [],
-                'labels': [],
                 'pred_labels': [],
-                'delta': []
+                'distance': [],
+                'inputs': [],
+                'best_adv': []
             }
 
             # load data.txt
@@ -109,6 +109,11 @@ if __name__ == '__main__':
                     _line = line.lower()
                     if any((match := substring) in _line for substring in exp_params.keys()):
                         exp_params[match] = line.split(":")[-1].strip()
+                        if match == 'norm':
+                            if exp_params[match] == 'inf':
+                                exp_params[match] = float('inf')
+                            else:
+                                exp_params[match] = int(exp_params[match])
 
             exps_params.append(exp_params)
 
@@ -129,7 +134,7 @@ if __name__ == '__main__':
 
         plot_distance([exp_data['epsilon']
                        for exp_data in exps_data],
-                      [exp_data['delta']
+                      [exp_data['distance']
                        for exp_data in exps_data],
                       exps_names=experiments,
                       exps_params=exps_params)
