@@ -70,11 +70,13 @@ class TestFMNAttack(TestAttack):
         self.standard_accuracy = None
         self.robust_accuracy = None
 
+        self.best_adv = None
+
     def run(self):
-        advs = self.attack.run()
+        self.best_adv = self.attack.run()
 
         standard_acc = accuracy(self.model, self.samples, self.labels)
-        model_robust_acc = accuracy(self.model, advs, self.labels)
+        model_robust_acc = accuracy(self.model, self.best_adv, self.labels)
         print("Standard Accuracy", standard_acc)
         print("[FMN] Robust accuracy: ", model_robust_acc)
 
