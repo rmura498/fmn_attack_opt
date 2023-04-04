@@ -30,7 +30,7 @@ class FMNOpt(Attack):
                  gamma_final: float = 0.001,
                  starting_points: Optional[Tensor] = None,
                  binary_search_steps: int = 10,
-                 optimizer='SGD',
+                 optimizer=SGD,
                  scheduler=CosineAnnealingLR
                  ):
         self.model = model
@@ -69,8 +69,14 @@ class FMNOpt(Attack):
         self.attack_data = {
             'epsilon': [],
             'pred_labels': [],
-            'delta': []
+            'distance': [],
+            'inputs': [],
+            'best_adv': []
         }
+
+        # storing initial labels (clean ones)
+        self.attack_data['pred_labels'].append(self.labels.clone())
+        self.attack_data['inputs'] = self.inputs.clone()
 
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -129,6 +135,7 @@ class FMNOpt(Attack):
                                         T_max=self.steps,
                                         eta_min=self.alpha_final)
 
+        print(f"epsilon init: {epsilon}")
         print("Starting the attack...\n")
         for i in range(self.steps):
             print(f"Attack completion: {i/self.steps *100:.2f}%")
@@ -142,6 +149,10 @@ class FMNOpt(Attack):
 
             logits = self.model(adv_inputs)
             pred_labels = logits.argmax(dim=1)
+
+            _epsilon = epsilon.clone()
+            _distance = torch.linalg.norm((adv_inputs - self.inputs).data.flatten(1), dim=1, ord=self.norm)
+
 
             if i == 0:
                 labels_infhot = torch.zeros_like(logits).scatter_(1, self.labels.unsqueeze(1), float('inf'))
@@ -194,14 +205,19 @@ class FMNOpt(Attack):
             self.scheduler.step()
 
             # Saving data
-            _epsilon = epsilon.clone()
-            _pred_labels = pred_labels.clone()
-            _delta = delta.clone()
-
             self.attack_data['epsilon'].append(_epsilon)
-            self.attack_data['pred_labels'].append(_pred_labels)
-            self.attack_data['delta'].append(torch.linalg.norm(_delta).item())
+            self.attack_data['distance'].append(_distance)
 
-            del _epsilon, _pred_labels, _delta
+            del _epsilon, _distance
+
+        # Computing best adv labels
+        logits = self.model(self.init_trackers['best_adv'])
+        pred_labels = logits.argmax(dim=1)
+
+        # Storing best adv labels (perturbed one)
+        self.attack_data['pred_labels'].append(pred_labels)
+
+        # Storing best adv
+        self.attack_data['best_adv'] = self.init_trackers['best_adv'].clone()
 
         return self.init_trackers['best_adv']
