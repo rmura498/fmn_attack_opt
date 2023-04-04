@@ -8,14 +8,14 @@ from .metrics import loss_fmn_fn
 
 
 def plot_distance(exps_epsilon_per_iter=[],
-                  exps_delta_per_iter=[],
+                  exps_distance_per_iter=[],
                   exps_names=[],
                   exps_params=[]):
     if len(exps_epsilon_per_iter) == 0:
         return
 
     # number of experiments
-    if (len(exps_epsilon_per_iter)) != (len(exps_delta_per_iter)):
+    if (len(exps_epsilon_per_iter)) != (len(exps_distance_per_iter)):
         return
 
     n_exps = len(exps_epsilon_per_iter)
@@ -24,26 +24,26 @@ def plot_distance(exps_epsilon_per_iter=[],
 
     for i in range(n_exps):
         exp_epsilons = exps_epsilon_per_iter[i]
-        exp_deltas = exps_delta_per_iter[i]
+        exp_distances = exps_distance_per_iter[i]
 
         steps = len(exp_epsilons)
         batch_size = len(exp_epsilons[0])
 
         # single experiment
         epsilons = []
-        deltas = []
+        distances = []
 
         for epsilon in exp_epsilons:
-            epsilons.append(torch.linalg.norm(epsilon).item())
-        for delta in exp_deltas:
-            deltas.append(delta)
+            epsilons.append(torch.linalg.norm(epsilon, ord=exps_params[i]['norm']).item())
+        for distance in exp_distances:
+            distances.append(torch.linalg.norm(distance, ord=exps_params[i]['norm']).item())
 
         ax = fig.add_subplot(plot_grid_size, plot_grid_size, i + 1)
         ax.plot(epsilons,
                 label='epsilon')
 
-        ax.plot(deltas,
-                label='deltas')
+        ax.plot(distances,
+                label='distances')
 
         ax.legend(loc=0, prop={'size': 8})
 
@@ -51,11 +51,11 @@ def plot_distance(exps_epsilon_per_iter=[],
         rect_height_inch = ax.bbox.height / dpi
         fontsize = rect_height_inch * 4
 
-        ax.set_title(f"Steps: {steps}, batch: {batch_size},\nOptimizier: {exps_params[i]['optimizer']}, Scheduler: {exps_params[i]['scheduler']}",
+        ax.set_title(f"Steps: {steps}, batch: {batch_size}, norm: {exps_params[i]['norm']},\nOptimizier: {exps_params[i]['optimizer']}, Scheduler: {exps_params[i]['scheduler']}",
                      fontsize=fontsize)
 
         ax.set_xlabel("Steps")
-        ax.set_ylabel("Epsilon/Delta (x-x0)")
+        ax.set_ylabel("Epsilon/Distance (x-x0)")
         ax.grid()
 
     plt.tight_layout()
@@ -90,7 +90,6 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[],
             ]
 
         epsilons = np.array(epsilons)
-        #epsilons /= 100
         epsilons.sort()
         robust_per_iter.sort(reverse=True)
 
@@ -106,7 +105,7 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[],
         rect_height_inch = ax.bbox.height / dpi
         fontsize = rect_height_inch * 4
 
-        ax.set_title(f"Steps: {steps}, batch: {batch_size},\nOptimizier: {exps_params[i]['optimizer']}, Scheduler: {exps_params[i]['scheduler']}", fontsize=fontsize)
+        ax.set_title(f"Steps: {steps}, batch: {batch_size}, norm: {exps_params[i]['norm']},\nOptimizier: {exps_params[i]['optimizer']}, Scheduler: {exps_params[i]['scheduler']}", fontsize=fontsize)
 
         ax.set_xlabel("Epsilon")
         ax.set_ylabel("Robust")
