@@ -153,7 +153,6 @@ class FMNOpt(Attack):
             _epsilon = epsilon.clone()
             _distance = torch.linalg.norm((adv_inputs - self.inputs).data.flatten(1), dim=1, ord=self.norm)
 
-
             if i == 0:
                 labels_infhot = torch.zeros_like(logits).scatter_(1, self.labels.unsqueeze(1), float('inf'))
                 logit_diff_func = partial(difference_of_logits, labels=self.labels, labels_infhot=labels_infhot)
