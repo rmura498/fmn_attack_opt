@@ -37,7 +37,7 @@ def plot_distance(exps_epsilon_per_iter=[],
             epsilons.append(torch.linalg.norm(epsilon, ord=exps_params[i]['norm']).item())
         for distance in exp_distances:
             distances.append(torch.linalg.norm(distance, ord=exps_params[i]['norm']).item())
-            print(distance.shape)
+
         ax = fig.add_subplot(plot_grid_size, plot_grid_size, i + 1)
         ax.plot(epsilons,
                 label='epsilon')

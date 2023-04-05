@@ -21,7 +21,7 @@ if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     plot_experiments = True
-    autoattack_test = False
+    autoattack_test = True
     dataset = load_dataset('cifar10')
 
     if not plot_experiments:
@@ -43,9 +43,9 @@ if __name__ == '__main__':
 
         exps = [
             {
-                'batch_size': 10,
+                'batch_size': 5,
                 'norm': float('inf'),
-                'steps': 20,
+                'steps': 5,
                 'attack': [FMNOpt, ],
                 'optimizer': 'SGD',
                 'epsilon': 8/255
@@ -56,9 +56,9 @@ if __name__ == '__main__':
             for exp_params in exps:
                 AA = TestAutoAttack(model=model,
                                     dataset=dataset,
+                                    attack=['apgd-ce', ],
                                     batch_size=exp_params['batch_size'],
-                                    norm=exp_params['norm'],
-                                    steps=exp_params['steps'])
+                                    norm=exp_params['norm'])
                 AA.run()
                 AA.save_data()
 
@@ -81,12 +81,15 @@ if __name__ == '__main__':
 
     else:
         experiments = [
-           'Exp_051017_FMNOpt_DMWideResNet_CIFAR10'
-
+            'Exp_051249_FMNOpt_DMWideResNet_CIFAR10',
+            'AA_Exp_051238_apgd-ce_DMWideResNet_CIFAR10'
         ]
 
         exps_data = []
         exps_params = []
+        AA_exps_data = []
+        AA_exps_params = []
+
         for exp_path in experiments:
             exp_path = os.path.join("Experiments", exp_path)
             exp_data = {
@@ -101,7 +104,8 @@ if __name__ == '__main__':
             exp_params = {
                 'optimizer': None,
                 'scheduler': None,
-                'norm': None
+                'norm': None,
+                'batch size': None
             }
             data_path = os.path.join(exp_path, "data.txt")
             with open(data_path, 'r') as file:
@@ -110,12 +114,10 @@ if __name__ == '__main__':
                     if any((match := substring) in _line for substring in exp_params.keys()):
                         exp_params[match] = line.split(":")[-1].strip()
                         if match == 'norm':
-                            if exp_params[match] == 'inf':
+                            if exp_params[match] in ['inf', 'Linf']:
                                 exp_params[match] = float('inf')
                             else:
                                 exp_params[match] = int(exp_params[match])
-
-            exps_params.append(exp_params)
 
             for data in exp_data:
                 data_path = os.path.join(exp_path, f"{data}.pkl")
@@ -123,8 +125,14 @@ if __name__ == '__main__':
                     data_load = pickle.load(file)
                     exp_data[data] = data_load
 
-            exps_data.append(exp_data)
+            if 'AA' not in exp_path:
+                exps_params.append(exp_params)
+                exps_data.append(exp_data)
+            else:
+                AA_exps_data.append(exp_data)
+                AA_exps_params.append(exp_params)
         best_distances = []
+
         for i, exp in enumerate(exps_data):
             best_adv = exp['best_adv']
             inputs = exp['inputs']
@@ -145,3 +153,22 @@ if __name__ == '__main__':
                        for exp_data in exps_data],
                       exps_names=experiments,
                       exps_params=exps_params)
+
+        if len(AA_exps_data) > 0:
+            AA_best_distances = []
+            for i, exp in enumerate(AA_exps_data):
+                best_adv = exp['best_adv']
+                inputs = exp['inputs']
+                distance = torch.linalg.norm((best_adv - inputs).data.flatten(1), dim=1, ord=AA_exps_params[i]['norm'])
+                AA_best_distances.append(distance)
+
+            plot_epsilon_robust(
+                exps_epsilon_per_iter=[exp_data['epsilon']
+                                       for exp_data in exps_data],
+                exps_names=experiments,
+                exps_params=exps_params,
+                best_distances=AA_best_distances
+            )
+
+
+

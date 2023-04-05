@@ -12,7 +12,8 @@ class TestAttack(ABC):
                  steps,
                  batch_size,
                  optimizer=None,
-                 scheduler=None):
+                 scheduler=None,
+                 AA=False):
         self.model = model
         self.dataset = dataset
         self.attack = attack
@@ -21,14 +22,20 @@ class TestAttack(ABC):
         self.batch_size = batch_size
         self.optimizer = optimizer
         self.scheduler = scheduler
-
+        self.AA = AA
         # Create experiment folder
-        self.attack_name = self.attack.__name__
+        if not AA:
+            self.attack_name = self.attack.__name__
+        else:
+            self.attack_name = '_'.join(param for param in self.attack)
         self.model_name = self.model.__class__.__name__
         self.dataset_name = self.dataset.__class__.__name__
 
         time = datetime.now().strftime("%d%H%M")
-        experiment = f'Exp_{time}_{self.attack_name}_{self.model_name}_{self.dataset_name}'
+        if not self.AA:
+            experiment = f'Exp_{time}_{self.attack_name}_{self.model_name}_{self.dataset_name}'
+        else:
+            experiment = f'AA_Exp_{time}_{self.attack_name}_{self.model_name}_{self.dataset_name}'
         path = os.path.join("Experiments", experiment)
         if not os.path.exists(path):
             os.makedirs(path)
