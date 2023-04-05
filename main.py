@@ -21,7 +21,7 @@ if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     plot_experiments = True
-    autoattack_test = True
+    autoattack_test = False
     dataset = load_dataset('cifar10')
 
     if not plot_experiments:
@@ -38,17 +38,20 @@ if __name__ == '__main__':
             dataset='cifar10',
             norm='Linf'
         )
+        # evitare potentially unreliable come modelli
+
+        # 4, 10 neurips
+        # 11 icml, 13 clear, 15
 
         model.eval()
 
         exps = [
             {
-                'batch_size': 5,
+                'batch_size': 50,
                 'norm': float('inf'),
-                'steps': 5,
+                'steps': 40,
                 'attack': [FMNOpt, ],
-                'optimizer': 'SGD',
-                'epsilon': 8/255
+                'optimizer': 'SGD'
             }
         ]
 
@@ -81,8 +84,7 @@ if __name__ == '__main__':
 
     else:
         experiments = [
-            'Exp_051249_FMNOpt_DMWideResNet_CIFAR10',
-            'AA_Exp_051238_apgd-ce_DMWideResNet_CIFAR10'
+            'Exp_051412_FMNOpt_DMWideResNet_CIFAR10'
         ]
 
         exps_data = []
@@ -140,8 +142,8 @@ if __name__ == '__main__':
             best_distances.append(distance)
 
         plot_epsilon_robust(
-            exps_epsilon_per_iter=[exp_data['epsilon']
-                                   for exp_data in exps_data],
+            exps_distances=[exp_data['distance']
+                            for exp_data in exps_data],
             exps_names=experiments,
             exps_params=exps_params,
             best_distances=best_distances
@@ -153,7 +155,7 @@ if __name__ == '__main__':
                        for exp_data in exps_data],
                       exps_names=experiments,
                       exps_params=exps_params)
-
+        '''
         if len(AA_exps_data) > 0:
             AA_best_distances = []
             for i, exp in enumerate(AA_exps_data):
@@ -163,12 +165,13 @@ if __name__ == '__main__':
                 AA_best_distances.append(distance)
 
             plot_epsilon_robust(
-                exps_epsilon_per_iter=[exp_data['epsilon']
-                                       for exp_data in exps_data],
+                exps_distances=[exp_data['epsilon']
+                                for exp_data in exps_data],
                 exps_names=experiments,
                 exps_params=exps_params,
                 best_distances=AA_best_distances
             )
+        '''
 
 
 
