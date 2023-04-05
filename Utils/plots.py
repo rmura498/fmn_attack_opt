@@ -62,40 +62,40 @@ def plot_distance(exps_epsilon_per_iter=[],
     plt.show()
 
 
-def plot_epsilon_robust(exps_epsilon_per_iter=[],
+def plot_epsilon_robust(exps_distances=[],
                         exps_names=[],
                         exps_params=[],
                         best_distances=[]):
-    if len(exps_epsilon_per_iter) == 0:
+    if len(exps_distances) == 0:
         return
 
     # number of experiments
-    n_exps = len(exps_epsilon_per_iter)
+    n_exps = len(exps_distances)
     plot_grid_size = n_exps//2 + 1
 
     fig = plt.figure()
 
-    for i, exp_epsilons in enumerate(exps_epsilon_per_iter):
+    for i, exp_distances in enumerate(exps_distances):
         # single experiment
-        steps = len(exp_epsilons)
-        batch_size = len(exp_epsilons[0])
+        steps = len(exp_distances)
+        batch_size = len(exp_distances[0])
 
-        epsilons = np.array([])
+        distances = np.array([])
         robust_per_iter = []
-        for epsilon in exp_epsilons:
+        for distance in exp_distances:
             # checking, for each step, the epsilon tensor
-            epsilons = np.concatenate((epsilons, epsilon.numpy()), axis=None)
+            distances = np.concatenate((distances, distance.numpy()), axis=None)
             robust_per_iter += [
-                (np.count_nonzero(eps > best_distances[i])/batch_size)
-                for eps in epsilon
+                (np.count_nonzero(dist > best_distances[i])/batch_size)
+                for dist in distance
             ]
 
-        epsilons = np.array(epsilons)
-        epsilons.sort()
+        distances = np.array(distances)
+        distances.sort()
         robust_per_iter.sort(reverse=True)
 
         ax = fig.add_subplot(plot_grid_size, plot_grid_size, i+1)
-        ax.plot(epsilons,
+        ax.plot(distances,
                 robust_per_iter,
                 label='robust')
         #x_ticks = np.around(np.linspace(np.min(epsilons), np.max(epsilons), num=8), 2)
@@ -108,7 +108,7 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[],
 
         ax.set_title(f"Steps: {steps}, batch: {batch_size}, norm: {exps_params[i]['norm']},\nOptimizier: {exps_params[i]['optimizer']}, Scheduler: {exps_params[i]['scheduler']}", fontsize=fontsize)
 
-        ax.set_xlabel("Epsilon")
+        ax.set_xlabel("Distance")
         ax.set_ylabel("Robust")
     plt.tight_layout()
     plt.show()
