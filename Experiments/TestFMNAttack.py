@@ -9,7 +9,7 @@ from Attacks.FMN.FMNBase import FMNBase
 from Utils.metrics import accuracy
 
 import torch
-from torch.optim import SGD, Adam
+from torch.optim import SGD, Adam, Adagrad, Adadelta
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
 import numpy as np
@@ -42,7 +42,9 @@ class TestFMNAttack(TestAttack):
 
         self._optimizers = {
             'SGD': SGD,
-            'Adam': Adam
+            'Adam': Adam,
+            'Adagrad': Adagrad,
+            'Adadelta': Adadelta
         }
 
         self._schedulers = {
