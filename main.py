@@ -155,23 +155,3 @@ if __name__ == '__main__':
                        for exp_data in exps_data],
                       exps_names=experiments,
                       exps_params=exps_params)
-        '''
-        if len(AA_exps_data) > 0:
-            AA_best_distances = []
-            for i, exp in enumerate(AA_exps_data):
-                best_adv = exp['best_adv']
-                inputs = exp['inputs']
-                distance = torch.linalg.norm((best_adv - inputs).data.flatten(1), dim=1, ord=AA_exps_params[i]['norm'])
-                AA_best_distances.append(distance)
-
-            plot_epsilon_robust(
-                exps_distances=[exp_data['epsilon']
-                                for exp_data in exps_data],
-                exps_names=experiments,
-                exps_params=exps_params,
-                best_distances=AA_best_distances
-            )
-        '''
-
-
-
