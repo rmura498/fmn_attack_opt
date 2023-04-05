@@ -36,7 +36,7 @@ if __name__ == '__main__':
             model_dir="./Models/pretrained",
             model_name='Wang2023Better_WRN-70-16',
             dataset='cifar10',
-            norm='L2'
+            norm='Linf'
         )
 
         model.eval()
@@ -44,8 +44,8 @@ if __name__ == '__main__':
         exps = [
             {
                 'batch_size': 10,
-                'norm': 2,
-                'steps': 30,
+                'norm': float('inf'),
+                'steps': 20,
                 'attack': [FMNOpt, ],
                 'optimizer': 'SGD',
                 'epsilon': 8/255
@@ -81,8 +81,8 @@ if __name__ == '__main__':
 
     else:
         experiments = [
-            'Exp_041315_FMNOpt_DMWideResNet_CIFAR10',
-            'Exp_041331_FMNOpt_DMWideResNet_CIFAR10'
+           'Exp_051017_FMNOpt_DMWideResNet_CIFAR10'
+
         ]
 
         exps_data = []
@@ -124,12 +124,19 @@ if __name__ == '__main__':
                     exp_data[data] = data_load
 
             exps_data.append(exp_data)
+        best_distances = []
+        for i, exp in enumerate(exps_data):
+            best_adv = exp['best_adv']
+            inputs = exp['inputs']
+            distance = torch.linalg.norm((best_adv - inputs).data.flatten(1), dim=1, ord=exps_params[i]['norm'])
+            best_distances.append(distance)
 
         plot_epsilon_robust(
             exps_epsilon_per_iter=[exp_data['epsilon']
                                    for exp_data in exps_data],
             exps_names=experiments,
-            exps_params=exps_params
+            exps_params=exps_params,
+            best_distances=best_distances
         )
 
         plot_distance([exp_data['epsilon']

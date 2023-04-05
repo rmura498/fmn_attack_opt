@@ -37,7 +37,7 @@ def plot_distance(exps_epsilon_per_iter=[],
             epsilons.append(torch.linalg.norm(epsilon, ord=exps_params[i]['norm']).item())
         for distance in exp_distances:
             distances.append(torch.linalg.norm(distance, ord=exps_params[i]['norm']).item())
-
+            print(distance.shape)
         ax = fig.add_subplot(plot_grid_size, plot_grid_size, i + 1)
         ax.plot(epsilons,
                 label='epsilon')
@@ -64,7 +64,8 @@ def plot_distance(exps_epsilon_per_iter=[],
 
 def plot_epsilon_robust(exps_epsilon_per_iter=[],
                         exps_names=[],
-                        exps_params=[]):
+                        exps_params=[],
+                        best_distances=[]):
     if len(exps_epsilon_per_iter) == 0:
         return
 
@@ -81,11 +82,11 @@ def plot_epsilon_robust(exps_epsilon_per_iter=[],
 
         epsilons = np.array([])
         robust_per_iter = []
-        for j, epsilon in enumerate(exp_epsilons):
+        for epsilon in exp_epsilons:
             # checking, for each step, the epsilon tensor
             epsilons = np.concatenate((epsilons, epsilon.numpy()), axis=None)
             robust_per_iter += [
-                (np.count_nonzero(eps > exp_epsilons[-1])/batch_size)
+                (np.count_nonzero(eps > best_distances[i])/batch_size)
                 for eps in epsilon
             ]
 
