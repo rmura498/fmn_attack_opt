@@ -31,10 +31,15 @@ if __name__ == '__main__':
         model_params_path = download_model(model='mnist_regular')
         model.load_state_dict(torch.load(model_params_path, map_location=device))
         '''
-
+        #Pang2022Robustness_WRN70_16 - 11° ICML 2022
+        #Pang2022Robustness_WRN28_10 - 18° ICML 2022
+        #Wang2023Better_WRN-70-16 - 1° arxiv 2023
+        #Wang2023Better_WRN-28-10 - 2° arxiv 2023
+        #Gowal2021Improving_28_10_ddpm_100m - 10° Neurips 2021
+        #Sehwag2021Proxy_ResNest152 - 13° ICLR 2022
         model = load_model(
             model_dir="./Models/pretrained",
-            model_name='Wang2023Better_WRN-70-16',
+            model_name='Gowal2021Improving_28_10_ddpm_100m',
             dataset='cifar10',
             norm='Linf'
         )
@@ -47,9 +52,9 @@ if __name__ == '__main__':
 
         exps = [
             {
-                'batch_size': 50,
+                'batch_size': 150,
                 'norm': float('inf'),
-                'steps': 40,
+                'steps': 20,
                 'attack': [FMNOpt, ],
                 'optimizer': 'SGD'
             }
@@ -76,15 +81,16 @@ if __name__ == '__main__':
                                     steps=exp_params['steps'],
                                     norm=exp_params['norm'],
                                     batch_size=exp_params['batch_size'],
-                                    optimizer=exp_params['optimizer'],
-                                    epsilon_init=exp_params['epsilon'])
+                                    optimizer=exp_params['optimizer'])
                 exp.run()
                 exp.save_data()
                 # TODO: save best adv
 
     else:
         experiments = [
-            'Exp_051412_FMNOpt_DMWideResNet_CIFAR10'
+            'Exp_062216_FMNOpt_DMWideResNet_CIFAR10',
+            'Exp_062224_FMNOpt_DMWideResNet_CIFAR10',
+            'Exp_062234_FMNOpt_DMWideResNet_CIFAR10'
         ]
 
         exps_data = []

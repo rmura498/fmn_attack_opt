@@ -132,7 +132,7 @@ class FMNOpt(Attack):
         # Initialize optimizer and scheduler
         self.optimizer = self.optimizer([delta], lr=self.alpha_init)
         self.scheduler = self.scheduler(self.optimizer,
-                                        T_max=self.steps,
+                                        T_0=self.steps,
                                         eta_min=self.alpha_final)
 
         print(f"epsilon init: {epsilon}")

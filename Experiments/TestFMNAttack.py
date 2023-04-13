@@ -10,7 +10,7 @@ from Utils.metrics import accuracy
 
 import torch
 from torch.optim import SGD, Adam, Adagrad, Adadelta
-from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.optim.lr_scheduler import CosineAnnealingLR, CosineAnnealingWarmRestarts
 
 import numpy as np
 
@@ -24,8 +24,9 @@ class TestFMNAttack(TestAttack):
                  steps=10,
                  batch_size=10,
                  optimizer='SGD',
-                 scheduler='CosineAnnealingLR',
-                 epsilon_init=None):
+                 scheduler='CosineAnnealingWarmRestarts',
+                 epsilon_init=None,
+                 create_exp_folder=True):
         super().__init__(
             model,
             dataset,
@@ -48,7 +49,8 @@ class TestFMNAttack(TestAttack):
         }
 
         self._schedulers = {
-            'CosineAnnealingLR': CosineAnnealingLR
+            'CosineAnnealingLR': CosineAnnealingLR,
+            'CosineAnnealingWarmRestarts': CosineAnnealingWarmRestarts
         }
 
         self.dl_test = torch.utils.data.DataLoader(dataset,
@@ -98,7 +100,7 @@ class TestFMNAttack(TestAttack):
             optimizer=self.optimizer,
             normalize=normalize,
             path=self.exp_path
-        )
+        )'''
 
     def save_data(self):
         _data = [
