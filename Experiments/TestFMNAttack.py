@@ -26,7 +26,9 @@ class TestFMNAttack(TestAttack):
                  optimizer='SGD',
                  scheduler='CosineAnnealingWarmRestarts',
                  epsilon_init=None,
-                 create_exp_folder=True):
+                 create_exp_folder=True,
+                 alpha_init=1
+                 ):
         super().__init__(
             model,
             dataset,
@@ -65,7 +67,8 @@ class TestFMNAttack(TestAttack):
             labels=self.labels,
             norm=self.norm,
             steps=self.steps,
-            epsilon_init=epsilon_init
+            epsilon_init=epsilon_init,
+            alpha_init=alpha_init
         )
 
         if hasattr(self.attack, 'optimizer') and hasattr(self.attack, 'scheduler'):

@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
         exps = [
             {
-                'batch_size': 150,
+                'batch_size': 10,
                 'norm': float('inf'),
                 'steps': 20,
                 'attack': [FMNOpt, ],
@@ -81,7 +81,8 @@ if __name__ == '__main__':
                                     steps=exp_params['steps'],
                                     norm=exp_params['norm'],
                                     batch_size=exp_params['batch_size'],
-                                    optimizer=exp_params['optimizer'])
+                                    optimizer=exp_params['optimizer'],
+                                    create_exp_folder=False)
                 exp.run()
                 exp.save_data()
                 # TODO: save best adv
