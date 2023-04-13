@@ -213,10 +213,14 @@ class FMNOpt(Attack):
         logits = self.model(self.init_trackers['best_adv'])
         pred_labels = logits.argmax(dim=1)
 
+        logit_diffs = logit_diff_func(logits=logits)
+        loss = -(multiplier * logit_diffs)
+        best_loss = loss.sum()
+
         # Storing best adv labels (perturbed one)
         self.attack_data['pred_labels'].append(pred_labels)
 
         # Storing best adv
         self.attack_data['best_adv'] = self.init_trackers['best_adv'].clone()
 
-        return self.init_trackers['best_adv']
+        return self.init_trackers['best_adv'], best_loss

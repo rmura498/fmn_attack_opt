@@ -35,7 +35,8 @@ class TestFMNAttack(TestAttack):
             steps,
             batch_size,
             optimizer,
-            scheduler
+            scheduler,
+            create_exp_folder
         )
 
         self.optimizer_name = optimizer
@@ -77,7 +78,7 @@ class TestFMNAttack(TestAttack):
         self.best_adv = None
 
     def run(self):
-        self.best_adv = self.attack.run()
+        self.best_adv, best_loss = self.attack.run()
 
         standard_acc = accuracy(self.model, self.samples, self.labels)
         model_robust_acc = accuracy(self.model, self.best_adv, self.labels)
@@ -86,9 +87,12 @@ class TestFMNAttack(TestAttack):
 
         self.standard_accuracy = standard_acc
         self.robust_accuracy = model_robust_acc
+        return best_loss
 
     def plot(self, normalize=True, translate_loss=True, translate_distance=True):
-        plot_loss_epsilon_over_steps(
+        pass
+        '''
+        plo_loss_epsilon_over_steps(
             self.attack.loss_per_iter,
             self.attack.epsilon_per_iter,
             distance_to_boundary=self.attack.distance_to_boundary_per_iter,
