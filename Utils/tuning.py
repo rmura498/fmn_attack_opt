@@ -9,26 +9,30 @@ from Attacks.FMN.FMNOpt import FMNOpt
 from robustbench.utils import load_model
 from Utils.datasets import load_dataset
 
+ray.init()
+
 space = {
     'lr': tune.uniform(1, 0)
 }
 
 
-def trainable(space):
-    model = load_model(
-        model_dir="./Models/pretrained",
+model = load_model(
+        model_dir="../Models/pretrained",
         model_name='Gowal2021Improving_28_10_ddpm_100m',
         dataset='cifar10',
         norm='Linf'
     )
-    dataset = load_dataset('cifar10')
+dataset = load_dataset('cifar10')
 
-    attack_params = {
-        'batch_size': 50,
-        'norm': float('inf'),
-        'steps': 20,
-        'optimizer': 'SGD'
-    }
+attack_params = {
+    'batch_size': 50,
+    'norm': float('inf'),
+    'steps': 20,
+    'optimizer': 'SGD'
+}
+
+
+def trainable(space):
 
     exp = TestFMNAttack(model,
                         dataset=dataset,
@@ -41,7 +45,9 @@ def trainable(space):
                         create_exp_folder=False)
     best_loss = exp.run()
 
-        session.report({"Best loss": best_loss})  # Send the score to Tune.
+    session.report({"Best loss": best_loss})  # Send the score to Tune.
+
+    del exp
 
 
 tuner = tune.Tuner(trainable, param_space=space, tune_config=tune.TuneConfig(num_samples=10))
