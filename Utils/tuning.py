@@ -30,21 +30,19 @@ def trainable(space):
         'optimizer': 'SGD'
     }
 
-    for x in range(20):
-        exp = TestFMNAttack(model,
-                            dataset=dataset,
-                            attack=FMNOpt,
-                            steps=attack_params['steps'],
-                            norm=attack_params['norm'],
-                            batch_size=attack_params['batch_size'],
-                            optimizer=attack_params['optimizer'],
-                            alpha_init=space['lr'])
-        best_loss = exp.run()
+    exp = TestFMNAttack(model,
+                        dataset=dataset,
+                        attack=FMNOpt,
+                        steps=attack_params['steps'],
+                        norm=attack_params['norm'],
+                        batch_size=attack_params['batch_size'],
+                        optimizer=attack_params['optimizer'],
+                        alpha_init=space['lr'],
+                        create_exp_folder=False)
+    best_loss = exp.run()
 
         session.report({"Best loss": best_loss})  # Send the score to Tune.
 
 
-if __name__ == '__main__':
-
-    tuner = tune.Tuner(trainable, param_space=space)
-    tuner.fit()
+tuner = tune.Tuner(trainable, param_space=space, tune_config=tune.TuneConfig(num_samples=10))
+tuner.fit()
