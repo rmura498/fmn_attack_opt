@@ -24,7 +24,7 @@ class TestFMNAttack(TestAttack):
                  steps=10,
                  batch_size=10,
                  optimizer='SGD',
-                 scheduler='CosineAnnealingWarmRestarts',
+                 scheduler='CosineAnnealingLR',
                  epsilon_init=None,
                  create_exp_folder=True,
                  alpha_init=1
@@ -68,7 +68,8 @@ class TestFMNAttack(TestAttack):
             norm=self.norm,
             steps=self.steps,
             epsilon_init=epsilon_init,
-            alpha_init=alpha_init
+            alpha_init=alpha_init,
+            save_data=True
         )
 
         if hasattr(self.attack, 'optimizer') and hasattr(self.attack, 'scheduler'):
@@ -79,9 +80,21 @@ class TestFMNAttack(TestAttack):
         self.robust_accuracy = None
 
         self.best_adv = None
+    """
++-----------------------+------------+--------------------+----------+------------+--------+------------------+-------------+
+| Trial name            | status     | loc                |       lr |   momentum |   iter |   total time (s) |   best_loss |
+|-----------------------+------------+--------------------+----------+------------+--------+------------------+-------------|
+| objective_306f4_00000 | TERMINATED | 10.51.13.210:62948 | 0.733194 |   0.838966 |      1 |          21.4681 |   -6.91676  |
+| objective_306f4_00001 | TERMINATED | 10.51.13.210:63024 | 0.258324 |   0.587091 |      1 |          21.3307 |   -0.103388 |
+| objective_306f4_00002 | TERMINATED | 10.51.13.210:63087 | 0.198554 |   0.61736  |      1 |          21.3356 |    0.180708 |
+| objective_306f4_00003 | TERMINATED | 10.51.13.210:63159 | 0.835269 |   0.400048 |      1 |          21.2257 |   -5.91403  |
++-----------------------+------------+--------------------+----------+------------+--------+------------------+-------------+
 
-    def run(self):
-        self.best_adv, best_loss = self.attack.run()
+    """
+
+    def run(self,):
+        self.best_adv, best_loss = self.attack.run(config={"lr":  1, "momentum":0.9,
+                                                           "dampening":0 , "weight_decay":0})
 
         standard_acc = accuracy(self.model, self.samples, self.labels)
         model_robust_acc = accuracy(self.model, self.best_adv, self.labels)

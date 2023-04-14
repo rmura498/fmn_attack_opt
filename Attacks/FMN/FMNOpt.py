@@ -1,9 +1,9 @@
 import math
 import torch
 from torch import nn, Tensor
-from torch.optim import SGD,Adam
+from torch.optim import SGD, Adam
 
-from torch.optim.lr_scheduler import CosineAnnealingLR,CosineAnnealingWarmRestarts
+from torch.optim.lr_scheduler import CosineAnnealingLR, CosineAnnealingWarmRestarts
 
 from functools import partial
 from typing import Optional
@@ -13,6 +13,7 @@ from Utils.projections import l0_projection_, l1_projection_, l2_projection_, li
 from Utils.projections import l0_mid_points, l1_mid_points, l2_mid_points, linf_mid_points
 from Utils.metrics import difference_of_logits
 
+from ray import tune
 
 class FMNOpt(Attack):
 
@@ -23,7 +24,7 @@ class FMNOpt(Attack):
                  norm: float,
                  targeted: bool = False,
                  steps: int = 10,
-                 epsilon_init = None,
+                 epsilon_init=None,
                  alpha_init: float = 1.0,
                  alpha_final: Optional[float] = None,
                  gamma_init: float = 0.05,
@@ -31,7 +32,8 @@ class FMNOpt(Attack):
                  starting_points: Optional[Tensor] = None,
                  binary_search_steps: int = 10,
                  optimizer=SGD,
-                 scheduler=CosineAnnealingLR
+                 scheduler=CosineAnnealingLR,
+                 save_data=False
                  ):
         self.model = model
         self.inputs = inputs
@@ -46,7 +48,7 @@ class FMNOpt(Attack):
         self.gamma_final = gamma_final
         self.starting_points = starting_points
         self.binary_search_steps = binary_search_steps
-
+        self.save_data=save_data
         self.device = self.inputs.device
         self.batch_size = len(self.inputs)
         self.batch_view = lambda tensor: tensor.view(self.batch_size, *[1] * (self.inputs.ndim - 1))
@@ -117,28 +119,33 @@ class FMNOpt(Attack):
 
         if epsilon is None:
             if self.norm == 0:
-                epsilon = torch.ones(self.batch_size, device=self.device) if self.starting_points is None else delta.flatten(1).norm(p=0, dim=0)
+                epsilon = torch.ones(self.batch_size,
+                                     device=self.device) if self.starting_points is None else delta.flatten(1).norm(p=0,
+                                                                                                                    dim=0)
             else:
                 epsilon = torch.full((self.batch_size,), float('inf'), device=self.device)
 
         return epsilon, delta, is_adv
 
-    def run(self):
+    def run(self, config):
         epsilon, delta, is_adv = self._init_attack()
         multiplier = 1 if self.targeted else -1
 
         dual, projection, mid_point = self._dual_projection_mid_points[self.norm]
 
         # Initialize optimizer and scheduler
-        self.optimizer = self.optimizer([delta], lr=self.alpha_init)
+        self.optimizer = self.optimizer([delta], lr=config['lr'],
+                                        momentum=config['momentum'],
+                                        weight_decay=config['weight_decay'],
+                                        dampening=config['dampening'])
         self.scheduler = self.scheduler(self.optimizer,
-                                        T_0=self.steps,
+                                        T_max=self.steps,
                                         eta_min=self.alpha_final)
 
         print(f"epsilon init: {epsilon}")
         print("Starting the attack...\n")
         for i in range(self.steps):
-            print(f"Attack completion: {i/self.steps *100:.2f}%")
+            print(f"Attack completion: {i / self.steps * 100:.2f}%")
             self.optimizer.zero_grad()
 
             cosine = (1 + math.cos(math.pi * i / self.steps)) / 2
@@ -168,7 +175,8 @@ class FMNOpt(Attack):
             is_both = is_adv & is_smaller
             self.init_trackers['adv_found'].logical_or_(is_adv)
             self.init_trackers['best_norm'] = torch.where(is_both, delta_norm, self.init_trackers['best_norm'])
-            self.init_trackers['best_adv'] = torch.where(self.batch_view(is_both), adv_inputs.detach(), self.init_trackers['best_adv'])
+            self.init_trackers['best_adv'] = torch.where(self.batch_view(is_both), adv_inputs.detach(),
+                                                         self.init_trackers['best_adv'])
 
             if self.norm == 0:
                 epsilon = torch.where(is_adv,
@@ -204,8 +212,9 @@ class FMNOpt(Attack):
             self.scheduler.step()
 
             # Saving data
-            self.attack_data['epsilon'].append(_epsilon)
-            self.attack_data['distance'].append(_distance)
+            if self.save_data:
+                self.attack_data['epsilon'].append(_epsilon)
+                self.attack_data['distance'].append(_distance)
 
             del _epsilon, _distance
 
@@ -215,12 +224,14 @@ class FMNOpt(Attack):
 
         logit_diffs = logit_diff_func(logits=logits)
         loss = -(multiplier * logit_diffs)
-        best_loss = loss.sum()
+        best_loss = loss.detach().sum().item()
 
-        # Storing best adv labels (perturbed one)
-        self.attack_data['pred_labels'].append(pred_labels)
+        if self.save_data:
+            # Storing best adv labels (perturbed one)
+            self.attack_data['pred_labels'].append(pred_labels)
 
-        # Storing best adv
-        self.attack_data['best_adv'] = self.init_trackers['best_adv'].clone()
+            # Storing best adv
+            self.attack_data['best_adv'] = self.init_trackers['best_adv'].clone()
 
         return self.init_trackers['best_adv'], best_loss
+

@@ -54,7 +54,7 @@ if __name__ == '__main__':
             {
                 'batch_size': 10,
                 'norm': float('inf'),
-                'steps': 20,
+                'steps': 15,
                 'attack': [FMNOpt, ],
                 'optimizer': 'SGD'
             }
@@ -89,9 +89,9 @@ if __name__ == '__main__':
 
     else:
         experiments = [
-            'Exp_062216_FMNOpt_DMWideResNet_CIFAR10',
-            'Exp_062224_FMNOpt_DMWideResNet_CIFAR10',
-            'Exp_062234_FMNOpt_DMWideResNet_CIFAR10'
+            'Exp_141253_FMNOpt_DMWideResNet_CIFAR10',
+            'Exp_141255_FMNOpt_DMWideResNet_CIFAR10',
+            'Exp_141650_FMNOpt_DMWideResNet_CIFAR10'
         ]
 
         exps_data = []
