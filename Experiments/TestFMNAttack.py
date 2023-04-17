@@ -25,7 +25,6 @@ class TestFMNAttack(TestAttack):
                  batch_size=10,
                  optimizer='SGD',
                  scheduler='CosineAnnealingLR',
-                 epsilon_init=None,
                  create_exp_folder=True,
                  alpha_init=1
                  ):
@@ -81,21 +80,18 @@ class TestFMNAttack(TestAttack):
         self.best_adv = None
 
     """
-+-----------------------+------------+--------------------+----------+------------+--------+------------------+-------------+
-| Trial name            | status     | loc                |       lr |   momentum |   iter |   total time (s) |   best_loss |
-|-----------------------+------------+--------------------+----------+------------+--------+------------------+-------------|
-| objective_306f4_00000 | TERMINATED | 10.51.13.210:62948 | 0.733194 |   0.838966 |      1 |          21.4681 |   -6.91676  |
-| objective_306f4_00001 | TERMINATED | 10.51.13.210:63024 | 0.258324 |   0.587091 |      1 |          21.3307 |   -0.103388 |
-| objective_306f4_00002 | TERMINATED | 10.51.13.210:63087 | 0.198554 |   0.61736  |      1 |          21.3356 |    0.180708 |
-| objective_306f4_00003 | TERMINATED | 10.51.13.210:63159 | 0.835269 |   0.400048 |      1 |          21.2257 |   -5.91403  |
-+-----------------------+------------+--------------------+----------+------------+--------+------------------+-------------+
-best config : {'lr': 0.5070107137022177, 'momentum': 0.8964168629875012, 'weight_decay': 0.022757196127728085, 'dampening': 0.2123442001160339}
-
+best_result : Result(metrics={'distance': 0.04519006609916687, 'done': True, 'trial_id': '3a08bb24', 'experiment_tag': '18_dampening=0.1091,lr=0.9957,momentum=0.8017'}, error=None, log_dir=PosixPath('/home/lucas/ray_results/objective_2023-04-17_18-21-28/objective_3a08bb24_18_dampening=0.1091,lr=0.9957,momentum=0.8017_2023-04-17_18-28-00'))
+, best config : {'lr': 0.995714859948475, 'momentum': 0.8017060210618113, 'dampening': 0.10910823490475516}
     """
 
-    def run(self, ):
-        distance, self.best_adv, = self.attack.run(config={"lr": 1, "momentum": 0,
-                                                           "dampening": 0})
+    def run(self):
+        distance, self.best_adv = self.attack.run(
+            config={
+                "lr": 0.995714859948475,
+                "momentum": 0.8017060210618113,
+                "dampening": 0.10910823490475516
+            }
+        )
 
         standard_acc = accuracy(self.model, self.samples, self.labels)
         model_robust_acc = accuracy(self.model, self.best_adv, self.labels)
