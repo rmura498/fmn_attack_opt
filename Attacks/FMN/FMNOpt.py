@@ -1,9 +1,9 @@
 import math
 import torch
 from torch import nn, Tensor
-from torch.optim import SGD, Adam
+from torch.optim import SGD,Adam
 
-from torch.optim.lr_scheduler import CosineAnnealingLR, CosineAnnealingWarmRestarts
+from torch.optim.lr_scheduler import CosineAnnealingLR,CosineAnnealingWarmRestarts
 
 from functools import partial
 from typing import Optional
@@ -15,6 +15,7 @@ from Utils.metrics import difference_of_logits
 
 from ray import tune
 
+
 class FMNOpt(Attack):
 
     def __init__(self,
@@ -24,7 +25,6 @@ class FMNOpt(Attack):
                  norm: float,
                  targeted: bool = False,
                  steps: int = 10,
-                 epsilon_init=None,
                  alpha_init: float = 1.0,
                  alpha_final: Optional[float] = None,
                  gamma_init: float = 0.05,
@@ -41,7 +41,6 @@ class FMNOpt(Attack):
         self.norm = norm
         self.targeted = targeted
         self.steps = steps
-        self.epsilon_init = epsilon_init
         self.alpha_init = alpha_init
         self.alpha_final = self.alpha_init / 100 if alpha_final is None else alpha_final
         self.gamma_init = gamma_init
@@ -104,34 +103,26 @@ class FMNOpt(Attack):
         return epsilon, delta, is_adv
 
     def _init_attack(self):
-        if self.epsilon_init is not None:
-            epsilon = torch.full((self.batch_size,), self.epsilon_init, device=self.device)
-        else:
-            epsilon = self.epsilon_init
-
         delta = torch.zeros_like(self.inputs)
         is_adv = None
 
         if self.starting_points is not None:
             epsilon, delta, is_adv = self._boundary_search()
 
-        delta.requires_grad_(True)
-
-        if epsilon is None:
-            if self.norm == 0:
-                epsilon = torch.ones(self.batch_size,
-                                     device=self.device) if self.starting_points is None else delta.flatten(1).norm(p=0,
-                                                                                                                    dim=0)
-            else:
-                epsilon = torch.full((self.batch_size,), float('inf'), device=self.device)
+        if self.norm == 0:
+            epsilon = torch.ones(self.batch_size, device=self.device) if self.starting_points is None else delta.flatten(1).norm(p=0, dim=0)
+        else:
+            epsilon = torch.full((self.batch_size,), float('inf'), device=self.device)
 
         return epsilon, delta, is_adv
 
     def run(self, config):
+        dual, projection, _ = self._dual_projection_mid_points[self.norm]
+
         epsilon, delta, is_adv = self._init_attack()
         multiplier = 1 if self.targeted else -1
 
-        dual, projection, mid_point = self._dual_projection_mid_points[self.norm]
+        delta.requires_grad_(True)
 
         # Initialize optimizer and scheduler
         self.optimizer = self.optimizer([delta], lr=config['lr'],
@@ -157,8 +148,9 @@ class FMNOpt(Attack):
             logits = self.model(adv_inputs)
             pred_labels = logits.argmax(dim=1)
 
-            _epsilon = epsilon.clone()
-            _distance = torch.linalg.norm((adv_inputs - self.inputs).data.flatten(1), dim=1, ord=self.norm)
+            if self.save_data:
+                _epsilon = epsilon.clone()
+                _distance = torch.linalg.norm((adv_inputs - self.inputs).data.flatten(1), dim=1, ord=self.norm)
 
             if i == 0:
                 labels_infhot = torch.zeros_like(logits).scatter_(1, self.labels.unsqueeze(1), float('inf'))
@@ -216,15 +208,11 @@ class FMNOpt(Attack):
                 self.attack_data['epsilon'].append(_epsilon)
                 self.attack_data['distance'].append(_distance)
 
-            del _epsilon, _distance
+                del _epsilon, _distance
 
-        # Computing best adv labels
-        logits = self.model(self.init_trackers['best_adv'])
-        pred_labels = logits.argmax(dim=1)
-
-        logit_diffs = logit_diff_func(logits=logits)
-        loss = -(multiplier * logit_diffs)
-        best_loss = loss.detach().sum().item()
+        # Computing the best distance (x-x0 for the adversarial) ~ should be equal to delta
+        _distance = torch.linalg.norm((self.init_trackers['best_adv'] - self.inputs).data.flatten(1),
+                                      dim=1, ord=self.norm)
 
         if self.save_data:
             # Storing best adv labels (perturbed one)
@@ -233,5 +221,4 @@ class FMNOpt(Attack):
             # Storing best adv
             self.attack_data['best_adv'] = self.init_trackers['best_adv'].clone()
 
-        return self.init_trackers['best_adv'], best_loss
-
+        return _distance
