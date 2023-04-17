@@ -15,9 +15,8 @@ ray.init()
 
 search_space = {
     'lr': FloatDistribution(0.5, 1, log=True),
-    'momentum': FloatDistribution(0.1, 0.9),
-    'dampening': FloatDistribution(0, 1),
-
+    'momentum': FloatDistribution(0.8, 0.9),
+    'dampening': FloatDistribution(0, 0.2)
 }
 
 model = load_model(
@@ -29,7 +28,7 @@ model = load_model(
 dataset = load_dataset('cifar10')
 
 attack_params = {
-    'batch_size': 20,
+    'batch_size': 30,
     'norm': float('inf'),
     'steps': 20,
     'optimizer': 'SGD'
@@ -41,15 +40,16 @@ samples, labels = next(iter(dl_test))
 
 
 def objective(config, model, samples, labels):
-    attack = FMNOpt(
-        model=model,
-        inputs=samples.clone(),
-        labels=labels.clone(),
-        norm=attack_params['norm'],
-        steps=attack_params['steps']
-    )
-    distance, best_adv = attack.run(config=config)
-    session.report({"distance": distance})
+    for epoch in range(10):
+        attack = FMNOpt(
+            model=model,
+            inputs=samples.clone(),
+            labels=labels.clone(),
+            norm=attack_params['norm'],
+            steps=attack_params['steps']
+        )
+        distance, _ = attack.run(config=config)
+        session.report({"distance": distance})
 
 
 trainable_with_resources = tune.with_resources(
@@ -65,15 +65,24 @@ trainable_with_resources = tune.with_resources(
     }
 )
 
-scheduler = ASHAScheduler(mode="max", metric="distance")
-scheduler_hyper = HyperBandScheduler(mode="max", metric="distance")
-optuna_search = OptunaSearch(space=search_space, mode='max', metric='distance')
+mode = 'min'
+metric = 'distance'
 
-tuner = tune.Tuner(trainable_with_resources, param_space=search_space,
-                   tune_config=tune.TuneConfig(num_samples=20, scheduler=scheduler,
-                                               search_alg=optuna_search),
-                   run_config=ray.air.RunConfig(verbose=3))
+scheduler = ASHAScheduler(mode=mode, metric=metric)
+optuna_search = OptunaSearch(space=search_space, mode=mode, metric=metric)
+
+tuner = tune.Tuner(
+    trainable_with_resources,
+    param_space=search_space,
+    tune_config=tune.TuneConfig(
+        num_samples=20,
+        search_alg=optuna_search,
+        scheduler=scheduler
+    )
+)
+
 results = tuner.fit()
-best_result = results.get_best_result(metric="distance", mode='max')
+
+best_result = results.get_best_result(metric=metric, mode=mode)
 best_config = best_result.config
 print(f"best_result : {best_result}\n, best config : {best_config}\n")
