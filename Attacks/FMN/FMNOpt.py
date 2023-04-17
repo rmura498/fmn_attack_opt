@@ -3,7 +3,7 @@ import torch
 from torch import nn, Tensor
 from torch.optim import SGD,Adam
 
-from torch.optim.lr_scheduler import CosineAnnealingLR,CosineAnnealingWarmRestarts
+from torch.optim.lr_scheduler import CosineAnnealingLR, CosineAnnealingWarmRestarts
 
 from functools import partial
 from typing import Optional
@@ -12,8 +12,6 @@ from Attacks.Attack import Attack
 from Utils.projections import l0_projection_, l1_projection_, l2_projection_, linf_projection_
 from Utils.projections import l0_mid_points, l1_mid_points, l2_mid_points, linf_mid_points
 from Utils.metrics import difference_of_logits
-
-from ray import tune
 
 
 class FMNOpt(Attack):
@@ -104,6 +102,7 @@ class FMNOpt(Attack):
 
     def _init_attack(self):
         delta = torch.zeros_like(self.inputs)
+
         is_adv = None
 
         if self.starting_points is not None:
@@ -212,7 +211,8 @@ class FMNOpt(Attack):
         # Computing the best distance (x-x0 for the adversarial) ~ should be equal to delta
         _distance = torch.linalg.norm((self.init_trackers['best_adv'] - self.inputs).data.flatten(1),
                                       dim=1, ord=self.norm)
-        _distance = torch.linalg.norm(_distance, ord=self.norm).item()
+        # _distance = torch.linalg.norm(_distance, ord=self.norm).item()
+
         if self.save_data:
             # Storing best adv labels (perturbed one)
             self.attack_data['pred_labels'].append(pred_labels)
@@ -220,4 +220,4 @@ class FMNOpt(Attack):
             # Storing best adv
             self.attack_data['best_adv'] = self.init_trackers['best_adv'].clone()
 
-        return _distance, self.attack_data['best_adv']
+        return torch.median(_distance).item(), self.attack_data['best_adv']
