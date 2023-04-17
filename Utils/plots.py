@@ -98,7 +98,7 @@ def plot_epsilon_robust(exps_distances=[],
         ax.plot(distances,
                 robust_per_iter,
                 label='robust')
-        ax.plot(8/255, 0.6338, 'x')
+        ax.plot(8/255, 0.5850, 'x')
         ax.axvline(8/255, c='g', linewidth=1)
         #x_ticks = np.around(np.linspace(np.min(epsilons), np.max(epsilons), num=8), 2)
         #ax.set_xticks(x_ticks)

@@ -127,7 +127,6 @@ class FMNOpt(Attack):
         # Initialize optimizer and scheduler
         self.optimizer = self.optimizer([delta], lr=config['lr'],
                                         momentum=config['momentum'],
-                                        weight_decay=config['weight_decay'],
                                         dampening=config['dampening'])
         self.scheduler = self.scheduler(self.optimizer,
                                         T_max=self.steps,
@@ -213,7 +212,7 @@ class FMNOpt(Attack):
         # Computing the best distance (x-x0 for the adversarial) ~ should be equal to delta
         _distance = torch.linalg.norm((self.init_trackers['best_adv'] - self.inputs).data.flatten(1),
                                       dim=1, ord=self.norm)
-
+        _distance = torch.linalg.norm(_distance, ord=self.norm).item()
         if self.save_data:
             # Storing best adv labels (perturbed one)
             self.attack_data['pred_labels'].append(pred_labels)
@@ -221,4 +220,4 @@ class FMNOpt(Attack):
             # Storing best adv
             self.attack_data['best_adv'] = self.init_trackers['best_adv'].clone()
 
-        return _distance
+        return _distance, self.attack_data['best_adv']

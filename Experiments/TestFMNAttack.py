@@ -67,7 +67,6 @@ class TestFMNAttack(TestAttack):
             labels=self.labels,
             norm=self.norm,
             steps=self.steps,
-            epsilon_init=epsilon_init,
             alpha_init=alpha_init,
             save_data=True
         )
@@ -80,6 +79,7 @@ class TestFMNAttack(TestAttack):
         self.robust_accuracy = None
 
         self.best_adv = None
+
     """
 +-----------------------+------------+--------------------+----------+------------+--------+------------------+-------------+
 | Trial name            | status     | loc                |       lr |   momentum |   iter |   total time (s) |   best_loss |
@@ -89,12 +89,13 @@ class TestFMNAttack(TestAttack):
 | objective_306f4_00002 | TERMINATED | 10.51.13.210:63087 | 0.198554 |   0.61736  |      1 |          21.3356 |    0.180708 |
 | objective_306f4_00003 | TERMINATED | 10.51.13.210:63159 | 0.835269 |   0.400048 |      1 |          21.2257 |   -5.91403  |
 +-----------------------+------------+--------------------+----------+------------+--------+------------------+-------------+
+best config : {'lr': 0.5070107137022177, 'momentum': 0.8964168629875012, 'weight_decay': 0.022757196127728085, 'dampening': 0.2123442001160339}
 
     """
 
-    def run(self,):
-        self.best_adv, best_loss = self.attack.run(config={"lr":  1, "momentum":0.9,
-                                                           "dampening":0 , "weight_decay":0})
+    def run(self, ):
+        distance, self.best_adv, = self.attack.run(config={"lr": 1, "momentum": 0,
+                                                           "dampening": 0})
 
         standard_acc = accuracy(self.model, self.samples, self.labels)
         model_robust_acc = accuracy(self.model, self.best_adv, self.labels)
@@ -103,7 +104,7 @@ class TestFMNAttack(TestAttack):
 
         self.standard_accuracy = standard_acc
         self.robust_accuracy = model_robust_acc
-        return best_loss
+        return self.best_adv
 
     def plot(self, normalize=True, translate_loss=True, translate_distance=True):
         pass

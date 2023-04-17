@@ -20,7 +20,7 @@ from robustbench.utils import load_model
 if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    plot_experiments = False
+    plot_experiments = True
     autoattack_test = False
     dataset = load_dataset('cifar10')
 
@@ -36,25 +36,23 @@ if __name__ == '__main__':
         #Wang2023Better_WRN-70-16 - 1° arxiv 2023
         #Wang2023Better_WRN-28-10 - 2° arxiv 2023
         #Gowal2021Improving_28_10_ddpm_100m - 10° Neurips 2021
+        #Gowal2021Improving_R18_ddpm_100m - 28° Neurips 2021 - 58.50
         #Sehwag2021Proxy_ResNest152 - 13° ICLR 2022
+
         model = load_model(
             model_dir="./Models/pretrained",
-            model_name='Gowal2021Improving_28_10_ddpm_100m',
+            model_name='Gowal2021Improving_R18_ddpm_100m',
             dataset='cifar10',
             norm='Linf'
         )
-        # evitare potentially unreliable come modelli
-
-        # 4, 10 neurips
-        # 11 icml, 13 clear, 15
 
         model.eval()
 
         exps = [
             {
-                'batch_size': 10,
+                'batch_size': 100,
                 'norm': float('inf'),
-                'steps': 15,
+                'steps': 50,
                 'attack': [FMNOpt, ],
                 'optimizer': 'SGD'
             }
@@ -89,9 +87,8 @@ if __name__ == '__main__':
 
     else:
         experiments = [
-            'Exp_141253_FMNOpt_DMWideResNet_CIFAR10',
-            'Exp_141255_FMNOpt_DMWideResNet_CIFAR10',
-            'Exp_141650_FMNOpt_DMWideResNet_CIFAR10'
+            'Exp_171655_FMNOpt_DMPreActResNet_CIFAR10',
+            'Exp_171656_FMNOpt_DMPreActResNet_CIFAR10'
         ]
 
         exps_data = []
