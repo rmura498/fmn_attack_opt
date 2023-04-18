@@ -1,28 +1,17 @@
 import torchvision
 from robustbench.utils import load_model as rb_load_model
 
-MODELS = [
-    'Gowal2021Improving_R18_ddpm_100m',
-    'Wang2023Better_WRN-70-16'
-]
-
-DATASETS = [
-    'cifar10',
-    'cifar100',
-    'mnist'
-]
-
-MODEL_NORMS = [0, 1, 2, 'inf']
+from Configs.model_dataset import MODELS, DATASETS, MODEL_NORMS
 
 
 def load_dataset(dataset_name='cifar10'):
     if dataset_name == 'mnist':
-        dataset = torchvision.datasets.MNIST('./data',
+        dataset = torchvision.datasets.MNIST('./Models/data',
                                              train=False,
                                              download=True,
                                              transform=torchvision.transforms.ToTensor())
     elif dataset_name == 'cifar10':
-        dataset = torchvision.datasets.CIFAR10('./data',
+        dataset = torchvision.datasets.CIFAR10('./Models/data',
                                                train=False,
                                                download=True,
                                                transform=torchvision.transforms.ToTensor())
