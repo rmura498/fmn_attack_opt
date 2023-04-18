@@ -25,7 +25,6 @@ OPTIMIZERS_SEARCH = {
     'Adam':
     {
         'lr': FloatDistribution(0.5, 1, log=True),
-        'betas': FloatDistribution(0.81, 0.99),
         'eps': FloatDistribution(1e-8, 1e-7, log=True),
         'amsgrad': CategoricalDistribution([False, True])
     }

@@ -1,14 +1,6 @@
-import os
-import pickle
-
 import torch
-from torch import nn
 
-from Models.SmallCNN import SmallCNN
-from Models.downloadModel import download_model
-
-from Utils.plots import plot_epsilon_robust, plot_distance
-from Utils.datasets import load_dataset
+from Models.load_data import load_dataset
 
 from Experiments.TestFMNAttack import TestFMNAttack
 from Experiments.TestAutoAttack import TestAutoAttack

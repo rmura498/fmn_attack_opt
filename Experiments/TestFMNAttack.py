@@ -43,13 +43,6 @@ class TestFMNAttack(TestAttack):
         self.optimizer_name = optimizer
         self.scheduler_name = scheduler
 
-        self._optimizers = {
-            'SGD': SGD,
-            'Adam': Adam,
-            'Adagrad': Adagrad,
-            'Adadelta': Adadelta
-        }
-
         self._schedulers = {
             'CosineAnnealingLR': CosineAnnealingLR,
             'CosineAnnealingWarmRestarts': CosineAnnealingWarmRestarts
@@ -71,7 +64,7 @@ class TestFMNAttack(TestAttack):
         )
 
         if hasattr(self.attack, 'optimizer') and hasattr(self.attack, 'scheduler'):
-            self.attack.optimizer = self._optimizers[self.optimizer_name]
+            self.attack.optimizer = self.optimizer
             self.attack.scheduler = self._schedulers[self.scheduler_name]
 
         self.standard_accuracy = None
@@ -87,9 +80,9 @@ best_result : Result(metrics={'distance': 0.04519006609916687, 'done': True, 'tr
     def run(self):
         distance, self.best_adv = self.attack.run(
             config={
-                "lr": 0.995714859948475,
-                "momentum": 0.8017060210618113,
-                "dampening": 0.10910823490475516
+                "lr": 0.7803572661328038,
+                #"momentum": 0.9141681922121645,
+                #"dampening": 0.0012792542095206721
             }
         )
 

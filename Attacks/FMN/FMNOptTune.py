@@ -130,7 +130,10 @@ class FMNOptTune(Attack):
         delta.requires_grad_(True)
 
         # Initialize optimizer and scheduler
-        self.optimizer = self.optimizer([delta], **self.optimizer_config)
+        if self.optimizer.__class__.__name__ == 'Adam':
+            self.optimizer = self.optimizer([delta], **self.optimizer_config, betas=(0.9, 0.99))
+        else:
+            self.optimizer = self.optimizer([delta], **self.optimizer_config)
         if self.scheduler.__name__ == 'MultiStepLR':
             self.scheduler = self.scheduler(self.optimizer, **self.scheduler_config,
                                             milestones=np.linspace(0, self.steps, 10))
@@ -199,11 +202,13 @@ class FMNOptTune(Attack):
 
             # clamp
             delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
+            # Computing the best distance (x-x0 for the adversarial) ~ should be equal to delta
+            _distance = torch.linalg.norm((self.init_trackers['best_adv'] - self.inputs).data.flatten(1),
+                                          dim=1, ord=self.norm)
 
-            self.scheduler.step()
-
-        # Computing the best distance (x-x0 for the adversarial) ~ should be equal to delta
-        _distance = torch.linalg.norm((self.init_trackers['best_adv'] - self.inputs).data.flatten(1),
-                                      dim=1, ord=self.norm)
+            if self.scheduler.__class__.__name__ == 'ReduceLROnPlateau':
+                self.scheduler.step(torch.median(_distance).item())
+            else:
+                self.scheduler.step()
 
         return torch.median(_distance).item(), self.init_trackers['best_adv']

@@ -6,11 +6,9 @@ import torch
 from Utils.plots import plot_epsilon_robust, plot_distance
 
 experiments = {
-            'Exp_172007_FMNOpt_DMPreActResNet_CIFAR10',
-            'Exp_172013_FMNOpt_DMPreActResNet_CIFAR10',
-            'Exp_172025_FMNOpt_DMPreActResNet_CIFAR10',
-            'Exp_172034_FMNOpt_DMPreActResNet_CIFAR10'
-
+            'Exp_171812_FMNOpt_DMPreActResNet_CIFAR10',
+            'Exp_171917_FMNOpt_DMPreActResNet_CIFAR10',
+            'Exp_172244_FMNOpt_DMPreActResNet_CIFAR10'
         }
 
 exps_data = []

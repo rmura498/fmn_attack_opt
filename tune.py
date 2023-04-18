@@ -2,7 +2,7 @@ import math
 import argparse
 
 import torch
-import ray
+from ray import air
 from ray.air import session
 from ray import tune
 # import luca from scionis from muravera
@@ -138,7 +138,8 @@ if __name__ == '__main__':
             num_samples=tune_config['num_samples'],
             search_alg=optuna_search,
             scheduler=scheduler
-        )
+        ),
+        run_config=air.RunConfig(local_dir="./TuningExp")
     )
 
     results = tuner.fit()

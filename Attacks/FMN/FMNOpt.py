@@ -4,7 +4,7 @@ from torch import nn, Tensor
 from torch.optim import SGD,Adam
 
 from torch.optim.lr_scheduler import CosineAnnealingLR, CosineAnnealingWarmRestarts
-
+from torch.optim import SGD, Adam, Adagrad
 from functools import partial
 from typing import Optional
 
@@ -29,7 +29,7 @@ class FMNOpt(Attack):
                  gamma_final: float = 0.001,
                  starting_points: Optional[Tensor] = None,
                  binary_search_steps: int = 10,
-                 optimizer=SGD,
+                 optimizer="SGD",
                  scheduler=CosineAnnealingLR,
                  save_data=False
                  ):
@@ -122,15 +122,19 @@ class FMNOpt(Attack):
         multiplier = 1 if self.targeted else -1
 
         delta.requires_grad_(True)
-
+        if self.optimizer == 'SGD':
         # Initialize optimizer and scheduler
-        self.optimizer = self.optimizer([delta], lr=config['lr'],
-                                        momentum=config['momentum'],
-                                        dampening=config['dampening'])
-        self.scheduler = self.scheduler(self.optimizer,
-                                        T_max=self.steps,
-                                        eta_min=self.alpha_final)
-
+            self.optimizer = SGD([delta], lr=config['lr'],
+                                            momentum=config['momentum'],
+                                            dampening=config['dampening'])
+            self.scheduler = self.scheduler(self.optimizer,
+                                            T_max=self.steps,
+                                            eta_min=self.alpha_final)
+        if self.optimizer == 'Adam':
+            self.optimizer = Adam([delta], lr=config['lr'])
+            self.scheduler = self.scheduler(self.optimizer,
+                                            T_max=self.steps,
+                                            eta_min=self.alpha_final)
         print(f"epsilon init: {epsilon}")
         print("Starting the attack...\n")
         for i in range(self.steps):
