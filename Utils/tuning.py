@@ -5,6 +5,7 @@ from ray import tune
 from ray.tune.search.optuna import OptunaSearch
 from ray.tune.schedulers import HyperBandScheduler, ASHAScheduler
 from optuna.distributions import FloatDistribution
+from optuna.samplers import TPESampler
 
 import torch
 from robustbench.utils import load_model
@@ -12,12 +13,23 @@ from Utils.datasets import load_dataset
 from Attacks.FMN.FMNOpt import FMNOpt
 
 ray.init()
+adam = True
 
-search_space = {
+search_space_SGD = {
     'lr': FloatDistribution(0.5, 1, log=True),
-    'momentum': FloatDistribution(0.8, 0.9),
-    'dampening': FloatDistribution(0, 0.2)
+    'momentum': FloatDistribution(0.81, 0.99),
+    'dampening': FloatDistribution(0, 0.2),
+
 }
+search_space_ADAM = {
+    'lr':FloatDistribution(0.5, 1, log=True)
+    #'betas':FloatDistribution(0.9, 0.99)
+    
+}
+if adam:
+    search_space=search_space_ADAM
+else:
+    search_space=search_space_SGD
 
 model = load_model(
     model_dir="../Models/pretrained",
@@ -28,10 +40,10 @@ model = load_model(
 dataset = load_dataset('cifar10')
 
 attack_params = {
-    'batch_size': 30,
+    'batch_size': 50,
     'norm': float('inf'),
-    'steps': 20,
-    'optimizer': 'SGD'
+    'steps': 30,
+    'optimizer': 'Adam'
 }
 dl_test = torch.utils.data.DataLoader(dataset,
                                       batch_size=attack_params['batch_size'],
@@ -40,13 +52,14 @@ samples, labels = next(iter(dl_test))
 
 
 def objective(config, model, samples, labels):
-    for epoch in range(10):
+    for epoch in range(5):
         attack = FMNOpt(
             model=model,
             inputs=samples.clone(),
             labels=labels.clone(),
             norm=attack_params['norm'],
-            steps=attack_params['steps']
+            steps=attack_params['steps'],
+            optimizer=attack_params['optimizer']
         )
         distance, _ = attack.run(config=config)
         session.report({"distance": distance})
@@ -68,14 +81,15 @@ trainable_with_resources = tune.with_resources(
 mode = 'min'
 metric = 'distance'
 
-scheduler = ASHAScheduler(mode=mode, metric=metric)
-optuna_search = OptunaSearch(space=search_space, mode=mode, metric=metric)
+scheduler = ASHAScheduler(mode=mode, metric=metric, grace_period=2)
+optuna_search = OptunaSearch(space=search_space, mode=mode,
+                             metric=metric, sampler=TPESampler())
 
 tuner = tune.Tuner(
     trainable_with_resources,
     param_space=search_space,
     tune_config=tune.TuneConfig(
-        num_samples=20,
+        num_samples=10,
         search_alg=optuna_search,
         scheduler=scheduler
     )
