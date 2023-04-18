@@ -53,6 +53,8 @@ class FMNOptTune(Attack):
         self.device = self.inputs.device
         self.batch_size = len(self.inputs)
         self.batch_view = lambda tensor: tensor.view(self.batch_size, *[1] * (self.inputs.ndim - 1))
+        self.optimizer_config=optimizer_config
+        self.scheduler_config=scheduler_config
 
         self._dual_projection_mid_points = {
             0: (None, l0_projection_, l0_mid_points),
@@ -69,8 +71,18 @@ class FMNOptTune(Attack):
             'adv_found': torch.zeros(self.batch_size, dtype=torch.bool, device=self.device)
         }
 
-        self.optimizer = optimizer
-        self.scheduler = scheduler
+        self._optimizers = {
+            "SGD": SGD,
+            "Adam": Adam
+        }
+        self._schedulers = {
+            "CosineAnnealingLR": CosineAnnealingLR,
+            "CosineAnnealingWarmRestarts": CosineAnnealingWarmRestarts,
+            "MultiStepLR": MultiStepLR,
+            "ReduceLROnPlateau": ReduceLROnPlateau
+        }
+        self.optimizer = self._optimizers[optimizer]
+        self.scheduler = self._schedulers[scheduler]
 
     def _boundary_search(self):
         _, _, mid_point = self._dual_projection_mid_points[self.norm]
@@ -101,7 +113,9 @@ class FMNOptTune(Attack):
             epsilon, delta, is_adv = self._boundary_search()
 
         if self.norm == 0:
-            epsilon = torch.ones(self.batch_size, device=self.device) if self.starting_points is None else delta.flatten(1).norm(p=0, dim=0)
+            epsilon = torch.ones(self.batch_size,
+                                 device=self.device) if self.starting_points is None else delta.flatten(1).norm(p=0,
+                                                                                                                dim=0)
         else:
             epsilon = torch.full((self.batch_size,), float('inf'), device=self.device)
 
