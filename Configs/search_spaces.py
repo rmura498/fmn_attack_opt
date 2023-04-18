@@ -34,9 +34,9 @@ OPTIMIZERS_SEARCH = {
 SCHEDULERS_SEARCH = {
     'CosineAnnealingLR':
         {
-            'T_max': lambda steps: steps,
-            'eta_min': 0,
-            'last_epoch': -1
+            'T_max': lambda steps: CategoricalDistribution([steps]),
+            'eta_min': CategoricalDistribution([0]),
+            'last_epoch': CategoricalDistribution([-1])
         },
     'CosineAnnealingWarmRestarts':
         {
@@ -53,7 +53,7 @@ SCHEDULERS_SEARCH = {
         {
             'factor': FloatDistribution(0.1, 0.5),
             'patience': CategoricalDistribution([5, 10, 20]),
-            'threshold': LogUniformDistribution(1e-5, 1e-3)
+            'threshold': FloatDistribution(1e-5, 1e-3, log=True)
         }
 }
 
