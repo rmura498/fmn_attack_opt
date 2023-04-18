@@ -1,9 +1,13 @@
 import math
+import numpy as np
 import torch
 from torch import nn, Tensor
-from torch.optim import SGD,Adam
-
-from torch.optim.lr_scheduler import CosineAnnealingLR, CosineAnnealingWarmRestarts
+from torch.optim import SGD, Adam
+from torch.optim.lr_scheduler import \
+    CosineAnnealingLR, \
+    CosineAnnealingWarmRestarts, \
+    MultiStepLR, \
+    ReduceLROnPlateau
 
 from functools import partial
 from typing import Optional
@@ -14,7 +18,7 @@ from Utils.projections import l0_mid_points, l1_mid_points, l2_mid_points, linf_
 from Utils.metrics import difference_of_logits
 
 
-class FMNOpt(Attack):
+class FMNOptTune(Attack):
 
     def __init__(self,
                  model: nn.Module,
@@ -29,15 +33,15 @@ class FMNOpt(Attack):
                  gamma_final: float = 0.001,
                  starting_points: Optional[Tensor] = None,
                  binary_search_steps: int = 10,
-                 optimizer=SGD,
-                 scheduler=CosineAnnealingLR,
+                 optimizer='SGD',
+                 scheduler='CosineAnnealingLR',
                  optimizer_config=None,
                  scheduler_config=None
                  ):
         self.model = model
         self.inputs = inputs
         self.labels = labels
-        self.norm = norm
+        self.norm = float('inf') if norm == 'inf' else int(norm)
         self.targeted = targeted
         self.steps = steps
         self.alpha_init = alpha_init
@@ -57,7 +61,7 @@ class FMNOpt(Attack):
             float('inf'): (1, linf_projection_, linf_mid_points),
         }
 
-        _worst_norm = torch.maximum(inputs, 1 - inputs).flatten(1).norm(p=norm, dim=1)
+        _worst_norm = torch.maximum(inputs, 1 - inputs).flatten(1).norm(p=self.norm, dim=1)
         self.init_trackers = {
             'worst_norm': _worst_norm,
             'best_norm': _worst_norm.clone(),
@@ -103,7 +107,7 @@ class FMNOpt(Attack):
 
         return epsilon, delta, is_adv
 
-    def run(self, config):
+    def run(self):
         dual, projection, _ = self._dual_projection_mid_points[self.norm]
 
         epsilon, delta, is_adv = self._init_attack()
@@ -112,10 +116,13 @@ class FMNOpt(Attack):
         delta.requires_grad_(True)
 
         # Initialize optimizer and scheduler
-        self.optimizer = self.optimizer([delta], **config)
-        self.scheduler = self.scheduler(self.optimizer, **config)
+        self.optimizer = self.optimizer([delta], **self.optimizer_config)
+        if self.scheduler.__name__ == 'MultiStepLR':
+            self.scheduler = self.scheduler(self.optimizer, **self.scheduler_config,
+                                            milestones=np.linspace(0, self.steps, 10))
+        else:
+            self.scheduler = self.scheduler(self.optimizer, **self.scheduler_config)
 
-        print(f"epsilon init: {epsilon}")
         print("Starting the attack...\n")
         for i in range(self.steps):
             print(f"Attack completion: {i / self.steps * 100:.2f}%")
@@ -129,10 +136,6 @@ class FMNOpt(Attack):
 
             logits = self.model(adv_inputs)
             pred_labels = logits.argmax(dim=1)
-
-            if self.save_data:
-                _epsilon = epsilon.clone()
-                _distance = torch.linalg.norm((adv_inputs - self.inputs).data.flatten(1), dim=1, ord=self.norm)
 
             if i == 0:
                 labels_infhot = torch.zeros_like(logits).scatter_(1, self.labels.unsqueeze(1), float('inf'))
@@ -185,23 +188,8 @@ class FMNOpt(Attack):
 
             self.scheduler.step()
 
-            # Saving data
-            if self.save_data:
-                self.attack_data['epsilon'].append(_epsilon)
-                self.attack_data['distance'].append(_distance)
-
-                del _epsilon, _distance
-
         # Computing the best distance (x-x0 for the adversarial) ~ should be equal to delta
         _distance = torch.linalg.norm((self.init_trackers['best_adv'] - self.inputs).data.flatten(1),
                                       dim=1, ord=self.norm)
-        # _distance = torch.linalg.norm(_distance, ord=self.norm).item()
 
-        if self.save_data:
-            # Storing best adv labels (perturbed one)
-            self.attack_data['pred_labels'].append(pred_labels)
-
-            # Storing best adv
-            self.attack_data['best_adv'] = self.init_trackers['best_adv'].clone()
-
-        return torch.median(_distance).item(), self.attack_data['best_adv']
+        return torch.median(_distance).item(), self.init_trackers['best_adv']
