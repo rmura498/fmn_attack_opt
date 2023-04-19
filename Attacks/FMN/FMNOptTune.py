@@ -73,16 +73,30 @@ class FMNOptTune(Attack):
 
         self._optimizers = {
             "SGD": SGD,
-            "Adam": Adam
+            "Adam": [
+                Adam,
+                {
+                    'betas': (0.9, 0.99)
+                }
+            ]
         }
         self._schedulers = {
             "CosineAnnealingLR": CosineAnnealingLR,
             "CosineAnnealingWarmRestarts": CosineAnnealingWarmRestarts,
-            "MultiStepLR": MultiStepLR,
+            "MultiStepLR": [
+                MultiStepLR,
+                {
+                    "milestones": np.linspace(0, self.steps, 10)
+                }
+            ],
             "ReduceLROnPlateau": ReduceLROnPlateau
         }
-        self.optimizer = self._optimizers[optimizer]
-        self.scheduler = self._schedulers[scheduler]
+
+        self.optimizer_name = optimizer
+        self.scheduler_name = scheduler
+
+        self.optimizer = None
+        self.scheduler = None
 
     def _boundary_search(self):
         _, _, mid_point = self._dual_projection_mid_points[self.norm]
@@ -105,8 +119,7 @@ class FMNOptTune(Attack):
         return epsilon, delta, is_adv
 
     def _init_attack(self):
-        delta = torch.zeros_like(self.inputs)
-
+        delta = torch.zeros_like(self.inputs, device=self.device)
         is_adv = None
 
         if self.starting_points is not None:
@@ -121,6 +134,37 @@ class FMNOptTune(Attack):
 
         return epsilon, delta, is_adv
 
+    def _init_optimizer(self, objective=None):
+        assert objective is not None
+
+        optimizer = self._optimizers[self.optimizer_name]
+
+        if isinstance(optimizer, list) and len(optimizer) > 0:
+            opt_params = optimizer[1]
+            optimizer = optimizer[0]([objective], **self.optimizer_config, **opt_params)
+        else:
+            optimizer = optimizer([objective], **self.optimizer_config)
+
+        self.optimizer = optimizer
+
+    def _init_scheduler(self):
+        assert self.optimizer is not None
+
+        scheduler = self._schedulers[self.scheduler_name]
+
+        if isinstance(scheduler, list) and len(scheduler) > 0:
+            sch_params = scheduler[1]
+            scheduler = scheduler[0](self.optimizer, **self.scheduler_config, **sch_params)
+        else:
+            scheduler = scheduler(self.optimizer, **self.scheduler_config)
+
+        self.scheduler = scheduler
+
+    def _scheduler_step(self, *step_params):
+        assert self.scheduler is not None
+
+        self.scheduler.step(*step_params)
+
     def run(self):
         dual, projection, _ = self._dual_projection_mid_points[self.norm]
 
@@ -130,15 +174,9 @@ class FMNOptTune(Attack):
         delta.requires_grad_(True)
 
         # Initialize optimizer and scheduler
-        if self.optimizer.__class__.__name__ == 'Adam':
-            self.optimizer = self.optimizer([delta], **self.optimizer_config, betas=(0.9, 0.99))
-        else:
-            self.optimizer = self.optimizer([delta], **self.optimizer_config)
-        if self.scheduler.__name__ == 'MultiStepLR':
-            self.scheduler = self.scheduler(self.optimizer, **self.scheduler_config,
-                                            milestones=np.linspace(0, self.steps, 10))
-        else:
-            self.scheduler = self.scheduler(self.optimizer, **self.scheduler_config)
+        self._init_optimizer(objective=delta)
+        self._init_scheduler()
+
 
         print("Starting the attack...\n")
         for i in range(self.steps):
@@ -206,9 +244,16 @@ class FMNOptTune(Attack):
             _distance = torch.linalg.norm((self.init_trackers['best_adv'] - self.inputs).data.flatten(1),
                                           dim=1, ord=self.norm)
 
+            '''
             if self.scheduler.__class__.__name__ == 'ReduceLROnPlateau':
                 self.scheduler.step(torch.median(_distance).item())
             else:
                 self.scheduler.step()
+            '''
+
+            if self.scheduler_name == 'ReduceLROnPlateau':
+                self._scheduler_step(torch.median(_distance).item())
+            else:
+                self._scheduler_step()
 
         return torch.median(_distance).item(), self.init_trackers['best_adv']
