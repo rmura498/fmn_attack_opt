@@ -10,7 +10,7 @@ from optuna.distributions import\
     DiscreteUniformDistribution
 
 
-OPTIMIZERS_SEARCH = {
+OPTIMIZERS_SEARCH_OPTUNA = {
     'SGD': {
         'lr': FloatDistribution(0.5, 1, log=True),
         'momentum': FloatDistribution(0.81, 0.99),
@@ -30,7 +30,7 @@ OPTIMIZERS_SEARCH = {
     }
 }
 
-SCHEDULERS_SEARCH = {
+SCHEDULERS_SEARCH_OPTUNA = {
     'CosineAnnealingLR':
         {
             'T_max': lambda steps: CategoricalDistribution([steps]),
