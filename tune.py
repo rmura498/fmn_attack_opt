@@ -6,13 +6,16 @@ from ray import air
 from ray.air import session
 from ray import tune
 from ray.tune.search.optuna import OptunaSearch
+from ray.tune.search.bayesopt import BayesOptSearch
+from ray.tune.search.ax import AxSearch
 from ray.tune.schedulers import ASHAScheduler
 from optuna.samplers import TPESampler
 
 from Attacks.FMN.FMNOptTune import FMNOptTune
 from Models.load_data import load_data
 from Configs.tuning_resources import TUNING_RES
-from Configs.search_spaces import OPTIMIZERS_SEARCH, SCHEDULERS_SEARCH
+# from Configs.search_spaces_optuna import OPTIMIZERS_SEARCH_OPTUNA, SCHEDULERS_SEARCH_OPTUNA
+from Configs.search_spaces_ax import OPTIMIZERS_SEARCH_AX, SCHEDULERS_SEARCH_AX
 
 parser = argparse.ArgumentParser(description='Retrieve tuning params')
 parser.add_argument('-opt', '--optimizer',
@@ -102,8 +105,8 @@ if __name__ == '__main__':
     samples, labels = next(iter(dl_test))
 
     # load search spaces
-    optimizer_search = OPTIMIZERS_SEARCH[optimizer]
-    scheduler_search = SCHEDULERS_SEARCH[scheduler]
+    optimizer_search = OPTIMIZERS_SEARCH_AX[optimizer]
+    scheduler_search = SCHEDULERS_SEARCH_AX[scheduler]
 
     steps_keys = ['T_max', 'T_0', 'milestones']
 
@@ -128,14 +131,16 @@ if __name__ == '__main__':
     )
 
     scheduler = ASHAScheduler(mode='min', metric='distance', grace_period=2)
-    optuna_search = OptunaSearch(space=search_space, mode='min', metric='distance', sampler=TPESampler())
+    # optuna_search = OptunaSearch(space=search_space, mode='min', metric='distance', sampler=TPESampler())
+    # bayesopt = BayesOptSearch(metric="distance", mode="min")
+    ax_search = AxSearch(mode='min', metric='distance')
 
     tuner = tune.Tuner(
         trainable_with_resources,
         param_space=search_space,
         tune_config=tune.TuneConfig(
             num_samples=tune_config['num_samples'],
-            search_alg=optuna_search,
+            search_alg=ax_search,
             scheduler=scheduler
         ),
         run_config=air.RunConfig(local_dir="./TuningExp")
