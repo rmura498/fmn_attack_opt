@@ -53,6 +53,10 @@ class FMNOptTuneSave(FMNOptTune):
             'best_adv': []
         }
 
+        # storing initial labels (clean ones)
+        self.attack_data['labels'].append(self.labels.clone())
+        self.attack_data['inputs'] = self.inputs.clone()
+
     def run(self):
         dual, projection, _ = self._dual_projection_mid_points[self.norm]
 
