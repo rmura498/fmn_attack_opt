@@ -5,23 +5,32 @@ from ray import tune
 
 OPTIMIZERS_SEARCH_TUNE = {
     'SGD': {
-        'lr': tune.loguniform(0.1, 1),
+        'lr': tune.loguniform(0.1, 100),
         'momentum': tune.uniform(0.81, 0.99),
+        'weight_decay':tune.loguniform(0.01, 10),
         'dampening': tune.uniform(0, 0.2)
     },
     'SGDNesterov': {
-        'lr': tune.loguniform(0.1, 1),
+        'lr': tune.loguniform(0.1, 100),
         'momentum': tune.uniform(0.81, 0.99),
         'dampening': 0,
-        'nesterov': tune.choice([False, True])
+        'nesterov': True
     },
     'Adam':
     {
-        'lr': tune.loguniform(0.1, 1),
-        'eps': tune.loguniform(1e-8, 1e-7),
-        'amsgrad': tune.choice([False, True]),
+        'lr': tune.loguniform(0.1, 100),
+        'weight_decay':tune.loguniform(0.01, 10),
+        'eps': 1e-8,
+        'amsgrad': False,
         'betas': (0.9, 0.999)
-    }
+    },
+    'AdamAmsgrad':
+        {
+            'lr': tune.loguniform(0.1, 100),
+            'eps': 1e-8,
+            'amsgrad': True,
+            'betas': (0.9, 0.999)
+        }
 }
 
 SCHEDULERS_SEARCH_TUNE = {
@@ -51,7 +60,7 @@ SCHEDULERS_SEARCH_TUNE = {
         {
             'factor': tune.uniform(0.1, 0.5),
             'patience': tune.choice([5, 10, 20]),
-            'threshold': tune.loguniform(1e-5, 1e-3)
+            'threshold': 1e-5
         }
 }
 
