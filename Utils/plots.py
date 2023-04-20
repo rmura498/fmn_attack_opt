@@ -1,23 +1,22 @@
-import os.path
-import numpy as np
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-
 import torch
+import numpy as np
 
-from .metrics import loss_fmn_fn
+import matplotlib
+import matplotlib.pyplot as plt
 
 
 def plot_distance(exps_epsilon_per_iter=[],
                   exps_distance_per_iter=[],
                   exps_names=[],
                   exps_params=[]):
+
     if len(exps_epsilon_per_iter) == 0:
+        print("Error: Not enough epsilon values per iter!")
         return
 
     # number of experiments
     if (len(exps_epsilon_per_iter)) != (len(exps_distance_per_iter)):
+        print("Error: epsilon size is different from distance size!")
         return
 
     n_exps = len(exps_epsilon_per_iter)
@@ -69,6 +68,7 @@ def plot_epsilon_robust(exps_distances=[],
                         exps_params=[],
                         best_distances=[]):
     if len(exps_distances) == 0:
+        print("Error: Not enough distances per experiment!")
         return
 
     # number of experiments
@@ -102,8 +102,6 @@ def plot_epsilon_robust(exps_distances=[],
                 label='robust')
         ax.plot(8/255, 0.5850, 'x')
         ax.axvline(8/255, c='g', linewidth=1)
-        #x_ticks = np.around(np.linspace(np.min(epsilons), np.max(epsilons), num=8), 2)
-        #ax.set_xticks(x_ticks)
         ax.grid()
 
         dpi = fig.dpi
@@ -117,12 +115,12 @@ def plot_epsilon_robust(exps_distances=[],
     plt.tight_layout()
     plt.show()
 
-
     # TODO: save the plot
     # plot_name = f'plot_{steps}_{norm}'
     # fig1.savefig(os.path.join(path, f"{plot_name}.png"))
 
 
+'''
 def plot_2D_attack(clf, target, labels, n_classes):
     if target is not False:
         target_classes = (labels + 1) % n_classes * target
@@ -155,3 +153,5 @@ def plot_2D_attack(clf, target, labels, n_classes):
                 format='png')
     plt.show()
     fig.close()
+    
+'''
