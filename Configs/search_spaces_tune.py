@@ -5,7 +5,7 @@ from ray import tune
 
 OPTIMIZERS_SEARCH_AX = {
     'SGD': {
-        'lr': tune.loguniform(0.1, 1),
+        'lr': tune.loguniform(1, 5),
         'momentum': tune.uniform(0.81, 0.99),
         'dampening': tune.uniform(0, 0.2)
     },
@@ -17,7 +17,7 @@ OPTIMIZERS_SEARCH_AX = {
     },
     'Adam':
     {
-        'lr': tune.loguniform(0.1, 1),
+        'lr': tune.loguniform(5, 10),
         'eps': tune.loguniform(1e-8, 1e-7),
         'amsgrad': tune.choice([False, True])
     }
@@ -39,6 +39,11 @@ SCHEDULERS_SEARCH_AX = {
         },
     'MultiStepLR':
         {
+            'milestones': lambda steps: tune.grid_search(
+                [np.linspace(0, steps, 10),
+                 np.linspace(0, steps, 5),
+                 np.linspace(0, steps, 3)]
+            ),
             'gamma': tune.uniform(0.1, 0.9)
         },
     'ReduceLROnPlateau':
