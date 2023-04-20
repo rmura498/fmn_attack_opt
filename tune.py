@@ -77,11 +77,15 @@ if __name__ == '__main__':
     dataset_id = args.dataset_id
     dataset_percent = args.dataset_percent
 
+    # load search spaces
+    optimizer_search = OPTIMIZERS_SEARCH_TUNE[optimizer]
+    scheduler_search = SCHEDULERS_SEARCH_TUNE[scheduler]
+
     attack_params = {
         'batch': int(args.batch),
         'steps': int(args.steps),
         'norm': args.norm,
-        'optimizer': optimizer,
+        'optimizer': "SGD" if optimizer == "SGDNesterov" else optimizer,
         'scheduler': scheduler
     }
 
@@ -101,14 +105,7 @@ if __name__ == '__main__':
                                           shuffle=False)
     samples, labels = next(iter(dl_test))
 
-    # load search spaces
-    optimizer_search = OPTIMIZERS_SEARCH_TUNE[optimizer]
-    scheduler_search = SCHEDULERS_SEARCH_TUNE[scheduler]
-
-    optimizer = "SGD" if optimizer == "SGDNesterov" else optimizer
-
     steps_keys = ['T_max', 'T_0', 'milestones']
-
     for key in steps_keys:
         if key in scheduler_search:
             scheduler_search[key] = scheduler_search[key](attack_params['steps'])
