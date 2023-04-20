@@ -17,7 +17,7 @@ from Attacks.FMN.FMNOptTune import FMNOptTune
 from Models.load_data import load_data
 from Configs.tuning_resources import TUNING_RES
 # from Configs.search_spaces_optuna import OPTIMIZERS_SEARCH_OPTUNA, SCHEDULERS_SEARCH_OPTUNA
-from Configs.search_spaces_tune import OPTIMIZERS_SEARCH_AX, SCHEDULERS_SEARCH_AX
+from Configs.search_spaces_tune import OPTIMIZERS_SEARCH_TUNE, SCHEDULERS_SEARCH_TUNE
 
 parser = argparse.ArgumentParser(description='Retrieve tuning params')
 parser.add_argument('-opt', '--optimizer',
@@ -107,8 +107,8 @@ if __name__ == '__main__':
     samples, labels = next(iter(dl_test))
 
     # load search spaces
-    optimizer_search = OPTIMIZERS_SEARCH_AX[optimizer]
-    scheduler_search = SCHEDULERS_SEARCH_AX[scheduler]
+    optimizer_search = OPTIMIZERS_SEARCH_TUNE[optimizer]
+    scheduler_search = SCHEDULERS_SEARCH_TUNE[scheduler]
 
     steps_keys = ['T_max', 'T_0', 'milestones']
 
