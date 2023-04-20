@@ -5,7 +5,7 @@ from ray import tune
 
 OPTIMIZERS_SEARCH_TUNE = {
     'SGD': {
-        'lr': tune.loguniform(1, 5),
+        'lr': tune.loguniform(0.1, 1),
         'momentum': tune.uniform(0.81, 0.99),
         'dampening': tune.uniform(0, 0.2)
     },
@@ -17,7 +17,7 @@ OPTIMIZERS_SEARCH_TUNE = {
     },
     'Adam':
     {
-        'lr': tune.loguniform(5, 10),
+        'lr': tune.loguniform(0.1, 1),
         'eps': tune.loguniform(1e-8, 1e-7),
         'amsgrad': tune.choice([False, True])
     }
