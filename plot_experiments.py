@@ -1,6 +1,5 @@
 import os
 import pickle
-
 import torch
 
 from Utils.plots import plot_epsilon_robust, plot_distance
@@ -46,6 +45,9 @@ if __name__ == '__main__':
             with open(data_path, 'rb') as file:
                 data_load = pickle.load(file)
                 exp_data[data] = data_load
+
+        exps_data.append(exp_data)
+        exps_params.append(exp_params)
 
     best_distances = []
 
