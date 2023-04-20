@@ -6,3 +6,4 @@ matplotlib
 numpy
 ray[tune]>=2.3.1
 optuna>=3.1.0
+flaml
