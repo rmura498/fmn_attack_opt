@@ -3,7 +3,7 @@ import numpy as np
 from ray import tune
 
 
-OPTIMIZERS_SEARCH_AX = {
+OPTIMIZERS_SEARCH_TUNE = {
     'SGD': {
         'lr': tune.loguniform(1, 5),
         'momentum': tune.uniform(0.81, 0.99),
@@ -23,7 +23,7 @@ OPTIMIZERS_SEARCH_AX = {
     }
 }
 
-SCHEDULERS_SEARCH_AX = {
+SCHEDULERS_SEARCH_TUNE = {
     'CosineAnnealingLR':
         {
             'T_max': lambda steps: steps,
