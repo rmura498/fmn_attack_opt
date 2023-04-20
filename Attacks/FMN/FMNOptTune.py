@@ -83,14 +83,18 @@ class FMNOptTune(Attack):
         self._schedulers = {
             "CosineAnnealingLR": CosineAnnealingLR,
             "CosineAnnealingWarmRestarts": CosineAnnealingWarmRestarts,
-            "MultiStepLR": [
-                MultiStepLR,
-                {
-                    "milestones": np.linspace(0, self.steps, 10)
-                }
-            ],
+            "MultiStepLR": MultiStepLR,
             "ReduceLROnPlateau": ReduceLROnPlateau
         }
+
+        '''
+        "MultiStepLR": [
+            MultiStepLR,
+            {
+                "milestones": np.linspace(0, self.steps, 10)
+            }
+        ],
+        '''
 
         self.optimizer_name = optimizer
         self.scheduler_name = scheduler
