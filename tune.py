@@ -1,5 +1,7 @@
+import os
 import math
 import argparse
+import json
 from datetime import datetime
 
 import torch
@@ -131,6 +133,7 @@ if __name__ == '__main__':
 
     time = datetime.now().strftime("%d%H%M")
     tuning_exp_name = f"{optimizer}_{scheduler}_{time}"
+    tuning_exp_path = os.path.join("TuningExp", tuning_exp_name)
     tuner = tune.Tuner(
         trainable_with_resources,
         param_space=search_space,
@@ -147,6 +150,15 @@ if __name__ == '__main__':
     best_result = results.get_best_result(metric='distance', mode='min')
     best_config = best_result.config
     print(f"best_result : {best_result}\n, best config : {best_config}\n")
+
+    best_config_json = json.dumps(best_config)
+
+    filename = os.path.join(tuning_exp_path, "best_config.json")
+    with open(filename, "w") as file:
+        file.write(best_config_json)
+
+
+
 
 
 
