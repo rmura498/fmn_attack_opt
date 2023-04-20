@@ -66,8 +66,8 @@ def tune_attack(config, model, samples, labels, attack_params, epochs=5):
             steps=attack_params['steps'],
             optimizer=attack_params['optimizer'],
             scheduler=attack_params['scheduler'],
-            optimizer_config=config['optimizer_search'],
-            scheduler_config=config['scheduler_search']
+            optimizer_config=config['opt_s'],
+            scheduler_config=config['sch_s']
         )
 
         distance, _ = attack.run()
@@ -77,9 +77,9 @@ def tune_attack(config, model, samples, labels, attack_params, epochs=5):
 if __name__ == '__main__':
     optimizer = args.optimizer
     scheduler = args.scheduler
-    model_id = args.model_id
-    dataset_id = args.dataset_id
-    dataset_percent = args.dataset_percent
+    model_id = int(args.model_id)
+    dataset_id = int(args.dataset_id)
+    dataset_percent = float(args.dataset_percent)
     working_path = args.working_path
 
     # load search spaces
@@ -115,8 +115,8 @@ if __name__ == '__main__':
         if key in scheduler_search:
             scheduler_search[key] = scheduler_search[key](attack_params['steps'])
     search_space = {
-        'optimizer_search': optimizer_search,
-        'scheduler_search': scheduler_search
+        'opt_s': optimizer_search,
+        'sch_s': scheduler_search
     }
 
     trainable_with_resources = tune.with_resources(
