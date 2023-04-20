@@ -73,6 +73,7 @@ class FMNOptTune(Attack):
 
         self._optimizers = {
             "SGD": SGD,
+            'SGDNesterov': SGD,
             "Adam": Adam
         }
         self._schedulers = {

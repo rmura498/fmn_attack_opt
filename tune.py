@@ -50,6 +50,8 @@ parser.add_argument('-ep', '--epochs',
 parser.add_argument('-dp', '--dataset_percent',
                     default=0.5,
                     help='Provide the percentage of test dataset to be used to tune the hyperparams (default: 0.5)')
+parser.add_argument('-wp', '--working_path',
+                    default='./TuningExp')
 
 args = parser.parse_args()
 
@@ -78,6 +80,7 @@ if __name__ == '__main__':
     model_id = args.model_id
     dataset_id = args.dataset_id
     dataset_percent = args.dataset_percent
+    working_path = args.working_path
 
     # load search spaces
     optimizer_search = OPTIMIZERS_SEARCH_TUNE[optimizer]
@@ -131,9 +134,10 @@ if __name__ == '__main__':
     tune_scheduler = ASHAScheduler(mode='min', metric='distance', grace_period=2)
     algo = CFO(metric='distance', mode='min')
 
+    # ./TuningExp/Modelname_dataset/...
     time = datetime.now().strftime("%d%H%M")
     tuning_exp_name = f"{optimizer}_{scheduler}_{time}"
-    tuning_exp_path = os.path.join("TuningExp", tuning_exp_name)
+    tuning_exp_path = os.path.join(working_path, tuning_exp_name)
     tuner = tune.Tuner(
         trainable_with_resources,
         param_space=search_space,
@@ -142,23 +146,26 @@ if __name__ == '__main__':
             search_alg=algo,
             scheduler=tune_scheduler
         ),
-        run_config=air.RunConfig(tuning_exp_name, local_dir="./TuningExp")
+        run_config=air.RunConfig(tuning_exp_name, local_dir=working_path)
     )
 
     results = tuner.fit()
 
+    # Checking best result and best config
     best_result = results.get_best_result(metric='distance', mode='min')
     best_config = best_result.config
-    print(f"best_result : {best_result}\n, best config : {best_config}\n")
+    print(f"best_distance : {best_result.metrics['distance']}\n, best config : {best_config}\n")
 
-    best_config_json = json.dumps(best_config)
+    best_result_json = {
+        'distance': best_result.metrics['distance'],
+        'best_config': best_result.config
+    }
 
-    filename = os.path.join(tuning_exp_path, "best_config.json")
+    best_result_json = json.dumps(best_result_json)
+
+    filename = os.path.join(tuning_exp_path, "best_result.json")
     with open(filename, "w") as file:
-        file.write(best_config_json)
-
-
-
+        file.write(best_result_json)
 
 
 
