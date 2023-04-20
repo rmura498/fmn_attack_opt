@@ -1,22 +1,17 @@
 import math
 import argparse
+from datetime import datetime
 
 import torch
 from ray import air
 from ray.air import session
 from ray import tune
-from ray.tune.search.optuna import OptunaSearch
-from ray.tune.search.bayesopt import BayesOptSearch
-from ray.tune.search.ax import AxSearch
-from ray.tune.search.bohb import TuneBOHB
 from ray.tune.search.flaml import CFO
 from ray.tune.schedulers import ASHAScheduler
-from optuna.samplers import TPESampler
 
 from Attacks.FMN.FMNOptTune import FMNOptTune
 from Models.load_data import load_data
 from Configs.tuning_resources import TUNING_RES
-# from Configs.search_spaces_optuna import OPTIMIZERS_SEARCH_OPTUNA, SCHEDULERS_SEARCH_OPTUNA
 from Configs.search_spaces_tune import OPTIMIZERS_SEARCH_TUNE, SCHEDULERS_SEARCH_TUNE
 
 parser = argparse.ArgumentParser(description='Retrieve tuning params')
@@ -57,7 +52,7 @@ parser.add_argument('-dp', '--dataset_percent',
 args = parser.parse_args()
 
 
-def objective(config, model, samples, labels, attack_params, epochs=5):
+def tune_attack(config, model, samples, labels, attack_params, epochs=5):
     for epoch in range(epochs):
         attack = FMNOptTune(
             model=model,
@@ -110,6 +105,8 @@ if __name__ == '__main__':
     optimizer_search = OPTIMIZERS_SEARCH_TUNE[optimizer]
     scheduler_search = SCHEDULERS_SEARCH_TUNE[scheduler]
 
+    optimizer = "SGD" if optimizer == "SGDNesterov" else optimizer
+
     steps_keys = ['T_max', 'T_0', 'milestones']
 
     for key in steps_keys:
@@ -122,7 +119,7 @@ if __name__ == '__main__':
 
     trainable_with_resources = tune.with_resources(
         tune.with_parameters(
-            objective,
+            tune_attack,
             model=model,
             samples=samples,
             labels=labels,
@@ -132,22 +129,20 @@ if __name__ == '__main__':
         resources=TUNING_RES
     )
 
-    scheduler = ASHAScheduler(mode='min', metric='distance', grace_period=2)
-    # algo = OptunaSearch(space=search_space, mode='min', metric='distance', sampler=TPESampler())
-    # algo = BayesOptSearch(metric="distance", mode="min")
-    # algo = AxSearch(mode='min', metric='distance')
-    # algo = TuneBOHB(metric="distance", mode="min")
+    tune_scheduler = ASHAScheduler(mode='min', metric='distance', grace_period=2)
     algo = CFO(metric='distance', mode='min')
 
+    time = datetime.now().strftime("%d%H%M")
+    tuning_exp_name = f"{optimizer}_{scheduler}_{time}"
     tuner = tune.Tuner(
         trainable_with_resources,
         param_space=search_space,
         tune_config=tune.TuneConfig(
             num_samples=tune_config['num_samples'],
             search_alg=algo,
-            scheduler=scheduler
+            scheduler=tune_scheduler
         ),
-        run_config=air.RunConfig(local_dir="./TuningExp")
+        run_config=air.RunConfig(tuning_exp_name, local_dir="./TuningExp")
     )
 
     results = tuner.fit()

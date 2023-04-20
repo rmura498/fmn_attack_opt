@@ -19,7 +19,8 @@ OPTIMIZERS_SEARCH_TUNE = {
     {
         'lr': tune.loguniform(0.1, 1),
         'eps': tune.loguniform(1e-8, 1e-7),
-        'amsgrad': tune.choice([False, True])
+        'amsgrad': tune.choice([False, True]),
+        'betas': (0.9, 0.999)
     }
 }
 

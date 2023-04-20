@@ -73,12 +73,7 @@ class FMNOptTune(Attack):
 
         self._optimizers = {
             "SGD": SGD,
-            "Adam": [
-                Adam,
-                {
-                    'betas': (0.9, 0.99)
-                }
-            ]
+            "Adam": Adam
         }
         self._schedulers = {
             "CosineAnnealingLR": CosineAnnealingLR,
@@ -181,7 +176,6 @@ class FMNOptTune(Attack):
         self._init_optimizer(objective=delta)
         self._init_scheduler()
 
-
         print("Starting the attack...\n")
         for i in range(self.steps):
             print(f"Attack completion: {i / self.steps * 100:.2f}%")
@@ -247,13 +241,6 @@ class FMNOptTune(Attack):
             # Computing the best distance (x-x0 for the adversarial) ~ should be equal to delta
             _distance = torch.linalg.norm((self.init_trackers['best_adv'] - self.inputs).data.flatten(1),
                                           dim=1, ord=self.norm)
-
-            '''
-            if self.scheduler.__class__.__name__ == 'ReduceLROnPlateau':
-                self.scheduler.step(torch.median(_distance).item())
-            else:
-                self.scheduler.step()
-            '''
 
             if self.scheduler_name == 'ReduceLROnPlateau':
                 self._scheduler_step(torch.median(_distance).item())
