@@ -50,6 +50,7 @@ class FMNOptTuneSave(FMNOptTune):
             'pred_labels': [],
             'distance': [],
             'inputs': [],
+            'labels' : [],
             'best_adv': []
         }
 
@@ -136,11 +137,11 @@ class FMNOptTuneSave(FMNOptTune):
             # clamp
             delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
             # Computing the best distance (x-x0 for the adversarial) ~ should be equal to delta
-            _distance = torch.linalg.norm((self.init_trackers['best_adv'] - self.inputs).data.flatten(1),
+            _best_distance = torch.linalg.norm((self.init_trackers['best_adv'] - self.inputs).data.flatten(1),
                                           dim=1, ord=self.norm)
 
             if self.scheduler_name == 'ReduceLROnPlateau':
-                self._scheduler_step(torch.median(_distance).item())
+                self._scheduler_step(torch.median(_best_distance).item())
             else:
                 self._scheduler_step()
 
@@ -148,7 +149,7 @@ class FMNOptTuneSave(FMNOptTune):
             self.attack_data['epsilon'].append(_epsilon)
             self.attack_data['distance'].append(_distance)
 
-            del _epsilon
+            del _epsilon, _distance
 
         logits = self.model(self.init_trackers['best_adv'])
         pred_labels = logits.argmax(dim=1)
@@ -159,4 +160,4 @@ class FMNOptTuneSave(FMNOptTune):
         # Storing best adv
         self.attack_data['best_adv'] = self.init_trackers['best_adv'].clone()
 
-        return torch.median(_distance).item(), self.init_trackers['best_adv']
+        return torch.median(_best_distance).item(), self.init_trackers['best_adv']

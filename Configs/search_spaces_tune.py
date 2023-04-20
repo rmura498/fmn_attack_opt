@@ -42,7 +42,7 @@ SCHEDULERS_SEARCH_TUNE = {
         },
     'CosineAnnealingWarmRestarts':
         {
-            'T_0': lambda steps: [steps//2],
+            'T_0': lambda steps: steps//2,
             'T_mult': 1,
             'eta_min': 0,
             'last_epoch': -1
