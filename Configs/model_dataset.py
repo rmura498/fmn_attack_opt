@@ -30,11 +30,6 @@ MODEL_DATASET = {
 
 }
 
-DATASETS = [
-    'cifar10',
-    'cifar100',
-    'mnist'
-]
 
 MODEL_NORMS = [0, 1, 2, 'inf']
 

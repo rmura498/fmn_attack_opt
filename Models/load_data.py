@@ -1,7 +1,7 @@
 import torchvision
 from robustbench.utils import load_model as rb_load_model
 
-from Configs.model_dataset import MODELS, DATASETS, MODEL_NORMS
+from Configs.model_dataset import MODEL_NORMS, MODEL_DATASET
 
 
 def load_dataset(dataset_name='cifar10'):
@@ -35,8 +35,8 @@ def load_model(model_name, dataset_name, norm='inf'):
     except KeyError:
         model = rb_load_model(
             model_dir="./Models/pretrained",
-            model_name=MODELS[0],
-            dataset='cifar10',
+            model_name=MODEL_DATASET[0]['model_name'],
+            dataset=MODEL_DATASET[0]['datasets'][0],
             norm='Linf'
         )
 
@@ -48,11 +48,11 @@ def load_data(model_id=0, dataset_id=0, norm='inf'):
     Load model and dataset (default: Gowal2021Improving_R18_ddpm_100m, CIFAR10)
     """
 
-    model_id = 0 if model_id > len(MODELS) else model_id
-    dataset_id = 0 if dataset_id > len(DATASETS) else dataset_id
+    model_id = 0 if model_id > len(MODEL_DATASET) else model_id
+    dataset_id = 0 if dataset_id > len(MODEL_DATASET[model_id]['datasets']) else dataset_id
 
-    model_name = MODELS[model_id]
-    dataset_name = DATASETS[dataset_id]
+    model_name = MODEL_DATASET[model_id]['model_name']
+    dataset_name = MODEL_DATASET[model_id]['datasets'][dataset_id]
 
     model = load_model(model_name, dataset_name, norm)
     dataset = load_dataset(dataset_name)
