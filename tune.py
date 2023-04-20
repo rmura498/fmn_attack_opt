@@ -1,7 +1,7 @@
 import os
 import math
 import argparse
-import json
+import pickle
 from datetime import datetime
 
 import torch
@@ -51,7 +51,7 @@ parser.add_argument('-dp', '--dataset_percent',
                     default=0.5,
                     help='Provide the percentage of test dataset to be used to tune the hyperparams (default: 0.5)')
 parser.add_argument('-wp', '--working_path',
-                    default='./TuningExp')
+                    default='TuningExp')
 
 args = parser.parse_args()
 
@@ -156,16 +156,12 @@ if __name__ == '__main__':
     best_config = best_result.config
     print(f"best_distance : {best_result.metrics['distance']}\n, best config : {best_config}\n")
 
-    best_result_json = {
+    best_result_packed = {
         'distance': best_result.metrics['distance'],
         'best_config': best_result.config
     }
 
-    best_result_json = json.dumps(best_result_json)
-
-    filename = os.path.join(tuning_exp_path, "best_result.json")
-    with open(filename, "w") as file:
-        file.write(best_result_json)
-
-
+    filename = os.path.join(tuning_exp_path, "best_result.pkl")
+    with open(filename, "wb") as file:
+        pickle.dump(best_result_packed, file)
 
