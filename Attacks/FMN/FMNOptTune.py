@@ -1,5 +1,5 @@
 import math
-import numpy as np
+
 import torch
 from torch import nn, Tensor
 from torch.optim import SGD, Adam
@@ -10,7 +10,7 @@ from torch.optim.lr_scheduler import \
     ReduceLROnPlateau
 
 from functools import partial
-from typing import Optional
+from typing import Optional, Union
 
 from Attacks.Attack import Attack
 from Utils.projections import l0_projection_, l1_projection_, l2_projection_, linf_projection_
@@ -24,11 +24,9 @@ class FMNOptTune(Attack):
                  model: nn.Module,
                  inputs: Tensor,
                  labels: Tensor,
-                 norm: float,
+                 norm: Union[str, int],
                  targeted: bool = False,
                  steps: int = 10,
-                 alpha_init: float = 1.0,
-                 alpha_final: Optional[float] = None,
                  gamma_init: float = 0.05,
                  gamma_final: float = 0.001,
                  starting_points: Optional[Tensor] = None,
@@ -44,8 +42,6 @@ class FMNOptTune(Attack):
         self.norm = float('inf') if norm == 'inf' else int(norm)
         self.targeted = targeted
         self.steps = steps
-        self.alpha_init = alpha_init
-        self.alpha_final = self.alpha_init / 100 if alpha_final is None else alpha_final
         self.gamma_init = gamma_init
         self.gamma_final = gamma_final
         self.starting_points = starting_points
@@ -82,15 +78,6 @@ class FMNOptTune(Attack):
             "MultiStepLR": MultiStepLR,
             "ReduceLROnPlateau": ReduceLROnPlateau
         }
-
-        '''
-        "MultiStepLR": [
-            MultiStepLR,
-            {
-                "milestones": np.linspace(0, self.steps, 10)
-            }
-        ],
-        '''
 
         self.optimizer_name = optimizer
         self.scheduler_name = scheduler
@@ -239,6 +226,7 @@ class FMNOptTune(Attack):
 
             # clamp
             delta.data.add_(self.inputs).clamp_(min=0, max=1).sub_(self.inputs)
+
             # Computing the best distance (x-x0 for the adversarial) ~ should be equal to delta
             _distance = torch.linalg.norm((self.init_trackers['best_adv'] - self.inputs).data.flatten(1),
                                           dim=1, ord=self.norm)
