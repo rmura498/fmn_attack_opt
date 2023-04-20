@@ -87,7 +87,7 @@ if __name__ == '__main__':
         'batch': int(args.batch),
         'steps': int(args.steps),
         'norm': args.norm,
-        'optimizer': "SGD" if optimizer == "SGDNesterov" else optimizer,
+        'optimizer': optimizer,
         'scheduler': scheduler
     }
 
