@@ -145,8 +145,6 @@ if __name__ == '__main__':
         perturbation_interval=1,
         metric='distance',
         mode='min',
-        quantile_fraction=0.5,
-        resample_probability=0.5,
         hyperparam_mutations=PBT_hyperparam_mutations
     )
 
