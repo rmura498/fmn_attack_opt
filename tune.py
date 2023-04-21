@@ -57,6 +57,8 @@ args = parser.parse_args()
 
 
 def tune_attack(config, model, samples, labels, attack_params, epochs=5):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     for epoch in range(epochs):
         attack = FMNOptTune(
             model=model,
@@ -67,7 +69,8 @@ def tune_attack(config, model, samples, labels, attack_params, epochs=5):
             optimizer=attack_params['optimizer'],
             scheduler=attack_params['scheduler'],
             optimizer_config=config['opt_s'],
-            scheduler_config=config['sch_s']
+            scheduler_config=config['sch_s'],
+            device=device
         )
 
         distance, _ = attack.run()
