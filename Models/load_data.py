@@ -47,7 +47,8 @@ def load_data(model_id=0, dataset_id=0, norm='inf'):
     """
     Load model and dataset (default: Gowal2021Improving_R18_ddpm_100m, CIFAR10)
     """
-
+    model_id=int(model_id)
+    dataset_id = int(dataset_id)
     model_id = 0 if model_id > len(MODEL_DATASET) else model_id
     dataset_id = 0 if dataset_id > len(MODEL_DATASET[model_id]['datasets']) else dataset_id
 
