@@ -116,8 +116,8 @@ if __name__ == '__main__':
         if key in scheduler_search[0]:
             scheduler_search[key] = scheduler_search[key](attack_params['steps'])
     search_space = {
-        'opt_s': optimizer_search,
-        'sch_s': scheduler_search
+        'opt_s': optimizer_search[0],
+        'sch_s': scheduler_search[0]
     }
 
     trainable_with_resources = tune.with_resources(
@@ -132,15 +132,23 @@ if __name__ == '__main__':
         resources=TUNING_RES
     )
 
-    # tune_scheduler = ASHAScheduler(mode='min', metric='distance', grace_period=2)
+    PBT_hyperparam_mutations = {
+        'opt_s': {},
+        'sch_s': {}
+    }
+    PBT_hyperparam_mutations['opt_s'] = optimizer_search[1]
+    if len(scheduler_search) > 1:
+        PBT_hyperparam_mutations['sch_s'] = scheduler_search[1]
+
     tune_scheduler = PopulationBasedTraining(
         time_attr='training_iteration',
         perturbation_interval=1,
         metric='distance',
         mode='min',
-        hyperparam_mutations=optimizer_search
+        quantile_fraction=0.5,
+        resample_probability=0.5,
+        hyperparam_mutations={**PBT_hyperparam_mutations['opt_s'], **PBT_hyperparam_mutations['sch_s']},
     )
-    # algo = CFO(metric='distance', mode='min')
 
     # ./TuningExp/Modelname_dataset/...
     time = datetime.now().strftime("%d%H%M")

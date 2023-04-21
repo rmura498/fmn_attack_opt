@@ -70,7 +70,8 @@ class FMNOptTune(Attack):
         self._optimizers = {
             "SGD": SGD,
             'SGDNesterov': SGD,
-            "Adam": Adam
+            "Adam": Adam,
+            'AdamAmsgrad': Adam
         }
         self._schedulers = {
             "CosineAnnealingLR": CosineAnnealingLR,
@@ -164,7 +165,7 @@ class FMNOptTune(Attack):
         self._init_optimizer(objective=delta)
         self._init_scheduler()
 
-        print("Starting the attack...\n")
+        # print("Starting the attack...\n")
         for i in range(self.steps):
             #print(f"Attack completion: {i / self.steps * 100:.2f}%")
             self.optimizer.zero_grad()
@@ -235,5 +236,7 @@ class FMNOptTune(Attack):
                 self._scheduler_step(torch.median(_distance).item())
             else:
                 self._scheduler_step()
+
+        print("Attack completed!\n")
 
         return torch.median(_distance).item(), self.init_trackers['best_adv']

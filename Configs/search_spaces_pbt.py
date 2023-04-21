@@ -53,27 +53,29 @@ OPTIMIZERS_SEARCH_PBT = {
 }
 
 SCHEDULERS_SEARCH_PBT = {
-    'CosineAnnealingLR':
+    'CosineAnnealingLR': [
         {
             'T_max': lambda steps: steps,
             'eta_min': 0
-        },
-    'CosineAnnealingWarmRestarts':
+        }
+    ],
+    'CosineAnnealingWarmRestarts': [
         {
             'T_0': lambda steps: steps//2,
             'T_mult': 1,
             'eta_min': 0
-        },
-    'MultiStepLR':
+        }
+    ],
+    'MultiStepLR': [
         {
-            'milestones': lambda steps: tune.grid_search(
-                [np.linspace(0, steps, 10),
-                 np.linspace(0, steps, 5),
-                 np.linspace(0, steps, 3)]
-            ),
+            'milestones': lambda steps: np.linspace(0, steps, 10),
             'gamma': tune.uniform(0.1, 0.9)
         },
-    'ReduceLROnPlateau':
+        {
+            'gamma': tune.uniform(0.1, 0.9)
+        }
+    ],
+    'ReduceLROnPlateau': [
         {
             'factor': 0.1,
             'patience': tune.grid_search([5, 10, 20]),
