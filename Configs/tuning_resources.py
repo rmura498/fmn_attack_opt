@@ -1,4 +1,6 @@
 TUNING_RES = {
-    'cpu': 6,
-    'cpu': 6
+    'cpu': 3,
+    'cpu': 3,
+    'cpu':3,
+    'cpu':3
 }

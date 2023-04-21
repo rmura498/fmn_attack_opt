@@ -114,7 +114,7 @@ if __name__ == '__main__':
     steps_keys = ['T_max', 'T_0', 'milestones']
     for key in steps_keys:
         if key in scheduler_search[0]:
-            scheduler_search[key] = scheduler_search[key](attack_params['steps'])
+            scheduler_search[0][key] = scheduler_search[0][key](attack_params['steps'])
     search_space = {
         'opt_s': optimizer_search[0],
         'sch_s': scheduler_search[0]
@@ -147,7 +147,7 @@ if __name__ == '__main__':
         mode='min',
         quantile_fraction=0.5,
         resample_probability=0.5,
-        hyperparam_mutations={**PBT_hyperparam_mutations['opt_s'], **PBT_hyperparam_mutations['sch_s']},
+        hyperparam_mutations=PBT_hyperparam_mutations
     )
 
     # ./TuningExp/Modelname_dataset/...
