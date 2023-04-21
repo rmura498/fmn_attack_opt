@@ -26,7 +26,8 @@ class FMNOptTuneSave(FMNOptTune):
                  optimizer='SGD',
                  scheduler='CosineAnnealingLR',
                  optimizer_config=None,
-                 scheduler_config=None
+                 scheduler_config=None,
+                 device='cpu'
                  ):
         super().__init__(
             model,
@@ -42,7 +43,8 @@ class FMNOptTuneSave(FMNOptTune):
             optimizer,
             scheduler,
             optimizer_config,
-            scheduler_config
+            scheduler_config,
+            device
         )
 
         self.attack_data = {

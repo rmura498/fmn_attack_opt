@@ -34,7 +34,8 @@ class FMNOptTune(Attack):
                  optimizer='SGD',
                  scheduler='CosineAnnealingLR',
                  optimizer_config=None,
-                 scheduler_config=None
+                 scheduler_config=None,
+                 device='cpu'
                  ):
         self.model = model
         self.inputs = inputs
@@ -46,7 +47,7 @@ class FMNOptTune(Attack):
         self.gamma_final = gamma_final
         self.starting_points = starting_points
         self.binary_search_steps = binary_search_steps
-        self.device = self.inputs.device
+        self.device = device
         self.batch_size = len(self.inputs)
         self.batch_view = lambda tensor: tensor.view(self.batch_size, *[1] * (self.inputs.ndim - 1))
         self.optimizer_config=optimizer_config
