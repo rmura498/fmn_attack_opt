@@ -13,6 +13,7 @@ OPTIMIZERS_SEARCH_TUNE = {
     'SGDNesterov': {
         'lr': tune.loguniform(1, 100),
         'momentum': tune.uniform(0.81, 0.99),
+        'weight_decay': tune.loguniform(0.01, 1),
         'dampening': 0,
         'nesterov': True
     },

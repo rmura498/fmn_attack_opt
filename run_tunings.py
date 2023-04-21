@@ -1,4 +1,4 @@
-import os, subprocess, argparse
+import os, argparse
 
 from Configs.model_dataset import MODEL_DATASET
 
