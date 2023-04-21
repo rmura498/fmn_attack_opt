@@ -5,9 +5,14 @@ import torch
 from Utils.plots import plot_epsilon_robust, plot_distance
 
 if __name__ == '__main__':
-    experiments = [
-        'DMPreActResNet_CIFAR10_201735'
-    ]
+    experiments = {
+
+
+        'DMPreActResNet_CIFAR10_210934',
+        'DMPreActResNet_CIFAR10_202007',
+
+
+    }
 
     exps_data = []
     exps_params = []
@@ -56,6 +61,8 @@ if __name__ == '__main__':
         inputs = exp['inputs']
         distance = torch.linalg.norm((best_adv - inputs).data.flatten(1), dim=1, ord=exps_params[i]['norm'])
         best_distances.append(distance)
+
+
 
     plot_epsilon_robust(
         exps_distances=[exp_data['distance']

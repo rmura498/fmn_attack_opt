@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
     steps_keys = ['T_max', 'T_0', 'milestones']
     for key in steps_keys:
-        if key in scheduler_search:
+        if key in scheduler_search[0]:
             scheduler_search[key] = scheduler_search[key](attack_params['steps'])
     search_space = {
         'opt_s': optimizer_search,

@@ -77,9 +77,10 @@ def tune_attack(config, model, samples, labels, attack_params, epochs=5):
 if __name__ == '__main__':
     optimizer = args.optimizer
     scheduler = args.scheduler
-    model_id = int(args.model_id)
-    dataset_id = int(args.dataset_id)
-    dataset_percent = float(args.dataset_percent)
+    model_id = args.model_id
+    dataset_id = args.dataset_id
+    dataset_percent = args.dataset_percent
+
     working_path = args.working_path
 
     # load search spaces

@@ -4,33 +4,52 @@ from ray import tune
 
 
 OPTIMIZERS_SEARCH_PBT = {
-    'SGD': {
-        'lr': tune.loguniform(1, 100),
-        'momentum': tune.uniform(0.81, 0.99),
-        'weight_decay': tune.loguniform(0.01, 10),
-        'dampening': tune.uniform(0, 0.2)
-    },
-    'SGDNesterov': {
-        'lr': tune.loguniform(1, 100),
-        'momentum': tune.uniform(0.81, 0.99),
-        'dampening': 0,
-        'nesterov': True
-    },
-    'Adam':
-    {
-        'lr': tune.loguniform(1, 100),
-        'weight_decay': tune.loguniform(0.01, 10),
-        'eps': 1e-8,
-        'amsgrad': False,
-        'betas': (0.9, 0.999)
-    },
-    'AdamAmsgrad':
-    {
-        'lr': tune.loguniform(1, 100),
-        'eps': 1e-8,
-        'amsgrad': True,
-        'betas': (0.9, 0.999)
-    }
+    'SGD': [
+        {
+            'lr': tune.grid_search([1, 50]),
+            'momentum': 0.9,
+            'weight_decay': 0.01,
+            'dampening': 0
+        },
+        {
+            'lr': tune.loguniform(1, 100),
+            'momentum': tune.uniform(0.81, 0.99),
+            'weight_decay': tune.loguniform(0.01, 1),
+            'dampening': tune.uniform(0, 0.2)
+        }
+    ],
+    'SGDNesterov': [ # 0: param space for tuner (init config), 1: hyperparams perturbation (for PBT)
+        {
+            'lr': tune.grid_search([1, 50]), # number of trials
+            'momentum': 0.9,
+            'weight_decay': 0.01,
+            'nesterov': True
+        },
+        {
+            'lr': tune.loguniform(1, 100),
+            'momentum': tune.uniform(0.81, 0.99),
+            'weight_decay': tune.loguniform(0.01, 1),
+        }
+    ],
+    'Adam': [
+        {
+            'lr': tune.loguniform(1, 100),
+            'weight_decay': 0.01
+        },
+        {
+            'lr': tune.loguniform(1, 100),
+            'weight_decay': tune.loguniform(0.01, 1)
+        }
+    ],
+    'AdamAmsgrad': [
+        {
+            'lr': tune.grid_search([10,50]),
+            'amsgrad': True,
+        },
+        {
+            'lr': tune.loguniform(10, 100),
+        }
+    ]
 }
 
 SCHEDULERS_SEARCH_PBT = {
@@ -56,9 +75,13 @@ SCHEDULERS_SEARCH_PBT = {
         },
     'ReduceLROnPlateau':
         {
+            'factor': 0.1,
+            'patience': tune.grid_search([5, 10, 20]),
+        },
+        {
             'factor': tune.uniform(0.1, 0.5),
-            'patience': tune.choice([5, 10, 20]),
-            'threshold': 1e-5
+            'patience': tune.uniform(1, 5),
         }
+    ]
 }
 
