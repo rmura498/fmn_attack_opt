@@ -38,8 +38,8 @@ class FMNOptTune(Attack):
                  device='cpu'
                  ):
         self.model = model
-        self.inputs = inputs
-        self.labels = labels
+        self.inputs = inputs.to(device)
+        self.labels = labels.to(device)
         self.norm = float('inf') if norm == 'inf' else int(norm)
         self.targeted = targeted
         self.steps = steps
