@@ -5,5 +5,7 @@ visdom>=0.1.8
 matplotlib
 numpy
 ray[tune]>=2.3.1
+ray[air]>=2.3.1
+ray[rllib]>=2.3.1
 flaml
 git+https://github.com/RobustBench/robustbench.git
