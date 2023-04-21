@@ -1,11 +1,12 @@
 import torch
 
 from Models.load_data import load_dataset
-import numpy as np
+
 from Experiments.TestAutoAttack import TestAutoAttack
 from Experiments.TestFMNAttackTune import TestFMNAttackTune
 
 from robustbench.utils import load_model
+
 
 if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -28,25 +29,14 @@ if __name__ == '__main__':
             'norm': 'inf',
             'steps': 100,
             'optimizer': 'Adam',
-            'scheduler': 'ReduceLROnPlateau'
+            'scheduler': 'MultiStepLR'
         }
     ]
 
-    optimizer_config = {
-        'lr': 65.65710590103423,
-        'amsgrad':False,
-        'weight_decay':0.013897883582532244,
-        'eps': 1e-8,
-        'betas':(0.9,0.99)
-    }
+    optimizer_config = {'lr': 6.866527016710307, 'weight_decay': 0.008}
 
-    scheduler_config = {
-        'factor':0.14503856327029602,
-        'patience':8,
-        'threshold':1e-05
-    }
-
-    conf = np.linspace(0, exps[0]["steps"], 10)
+    scheduler_config = {'milestones': [ 0.,  2.22222222,  4.44444444,  6.66666667,  8.88888889,
+       11.11111111, 13.33333333, 15.55555556, 17.77777778, 20.], 'gamma': 0.2428195052231441}
 
     for i, exp_params in enumerate(exps):
         print(f"\nRunning experiment #{i}")
