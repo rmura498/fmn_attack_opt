@@ -2,7 +2,7 @@ import os, subprocess, argparse
 
 from Configs.model_dataset import MODEL_DATASET
 
-OPTIMIZERS = ["SGD","SGDNesterov","Adam"]
+OPTIMIZERS = ["SGD","SGDNesterov","Adam",'AdamAmsgrad']
 
 SCHEDULERS = [
     "CosineAnnealingLR",
@@ -48,21 +48,9 @@ if __name__ == '__main__':
 
             for opt in OPTIMIZERS:
                 for sch in SCHEDULERS:
-                    tuning_cmd = f'python tune.py --model_id {model_id} --dataset_id {dataset_id} --optimizer {opt}\
-                                 --scheduler {sch} --batch {batch} --steps {steps} --num_samples {num_s} --epochs {epochs}\
-                                 --dataset_percent {dt_percent} --working_path {tuning_exp_wp}'
+                    tuning_cmd = f'python tune.py --model_id {model_id} --dataset_id {dataset_id} --optimizer {opt} --scheduler {sch} --batch {batch} --steps {steps} --num_samples {num_s} --epochs {epochs} --dataset_percent {dt_percent} --working_path {tuning_exp_wp}\n'
                     tuning_cmds.append(tuning_cmd)
 
-    for i, cmd in enumerate(tuning_cmds):
-        print(f"Tuning #{i}")
-        print(f"Cmd: {cmd}\n")
-        try:
-            subprocess.run(cmd, check=True, shell=True)
-        except subprocess.SubprocessError as e:
-            continue
-        except FileNotFoundError as e:
-            print("Subprocess error: file not found\n{}".format(e.filename))
-            continue
-        except KeyError as e:
-            print("Tuning error: maybe distance is missing ...")
-            continue
+    with open("tuning_cmd.txt", 'w') as f:
+        f.writelines(tuning_cmds)
+
