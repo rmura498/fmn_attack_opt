@@ -5,14 +5,9 @@ import torch
 from Utils.plots import plot_epsilon_robust, plot_distance
 
 if __name__ == '__main__':
-    experiments = {
-
-
-        'DMPreActResNet_CIFAR10_210934',
-        'DMPreActResNet_CIFAR10_202007',
-
-
-    }
+    experiments = [
+        'DMPreActResNet_CIFAR10_241829'
+    ]
 
     exps_data = []
     exps_params = []

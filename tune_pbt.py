@@ -51,6 +51,10 @@ parser.add_argument('-ep', '--epochs',
 parser.add_argument('-dp', '--dataset_percent',
                     default=0.5,
                     help='Provide the percentage of test dataset to be used to tune the hyperparams (default: 0.5)')
+parser.add_argument('-l', '--loss',
+                    default=0,
+                    help='Provide the selection of the loss computation 0 for logit, 1 for cross entropy\
+                         (default: 0)')
 parser.add_argument('-wp', '--working_path',
                     default='TuningExp')
 
@@ -71,7 +75,8 @@ def tune_attack(config, model, samples, labels, attack_params, epochs=5):
             scheduler=attack_params['scheduler'],
             optimizer_config=config['opt_s'],
             scheduler_config=config['sch_s'],
-            device=device
+            device=device,
+            logit_loss = True if attack_params['loss_selection'] == 0 else False
         )
 
         distance, _ = attack.run()
@@ -85,6 +90,7 @@ if __name__ == '__main__':
     dataset_id = int(args.dataset_id)
     dataset_percent = float(args.dataset_percent)
     working_path = args.working_path
+    loss = args.loss
 
     # load search spaces
     optimizer_search = OPTIMIZERS_SEARCH_PBT[optimizer]
@@ -95,7 +101,8 @@ if __name__ == '__main__':
         'steps': int(args.steps),
         'norm': int(args.norm) if not isinstance(args.norm, str) else args.norm,
         'optimizer': optimizer,
-        'scheduler': scheduler
+        'scheduler': scheduler,
+        'loss_selection': loss
     }
 
     tune_config = {

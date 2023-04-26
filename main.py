@@ -25,15 +25,15 @@ if __name__ == '__main__':
 
     exps = [
         {
-            'batch_size': 100,
+            'batch_size': 2,
             'norm': 'inf',
-            'steps': 100,
+            'steps': 10,
             'optimizer': 'Adam',
             'scheduler': 'MultiStepLR'
         }
     ]
 
-    optimizer_config = {'lr': 6.866527016710307, 'weight_decay': 0.008}
+    optimizer_config = {'lr': 10}
 
     scheduler_config = {'milestones': [ 0.,  2.22222222,  4.44444444,  6.66666667,  8.88888889,
        11.11111111, 13.33333333, 15.55555556, 17.77777778, 20.], 'gamma': 0.2428195052231441}
