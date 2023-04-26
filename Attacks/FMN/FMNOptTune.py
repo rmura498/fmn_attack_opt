@@ -35,7 +35,8 @@ class FMNOptTune(Attack):
                  scheduler='CosineAnnealingLR',
                  optimizer_config=None,
                  scheduler_config=None,
-                 device='cpu'
+                 device='cpu',
+                 logit_loss = True
                  ):
         self.model = model
         self.inputs = inputs.to(device)
@@ -52,6 +53,7 @@ class FMNOptTune(Attack):
         self.batch_view = lambda tensor: tensor.view(self.batch_size, *[1] * (self.inputs.ndim - 1))
         self.optimizer_config=optimizer_config
         self.scheduler_config=scheduler_config
+        self.logit_loss = logit_loss
 
         self._dual_projection_mid_points = {
             0: (None, l0_projection_, l0_mid_points),
@@ -180,14 +182,19 @@ class FMNOptTune(Attack):
             logits = self.model(adv_inputs)
             pred_labels = logits.argmax(dim=1)
 
-            if i == 0:
-                labels_infhot = torch.zeros_like(logits).scatter_(1, self.labels.unsqueeze(1), float('inf'))
-                logit_diff_func = partial(difference_of_logits, labels=self.labels, labels_infhot=labels_infhot)
+            if self.logit_loss:
+                if i == 0:
+                    labels_infhot = torch.zeros_like(logits).scatter_(1, self.labels.unsqueeze(1), float('inf'))
+                    logit_diff_func = partial(difference_of_logits, labels=self.labels, labels_infhot=labels_infhot)
 
-            logit_diffs = logit_diff_func(logits=logits)
-            loss = -(multiplier * logit_diffs)
+                logit_diffs = logit_diff_func(logits=logits)
+                loss = -(multiplier * logit_diffs)
+
+            else:
+                c_loss = nn.CrossEntropyLoss()
+                loss = -c_loss(logits, self.labels)
+
             loss.sum().backward()
-
             delta_grad = delta.grad.data
 
             is_adv = (pred_labels == self.labels) if self.targeted else (pred_labels != self.labels)

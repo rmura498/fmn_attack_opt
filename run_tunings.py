@@ -48,8 +48,9 @@ if __name__ == '__main__':
 
             for opt in OPTIMIZERS:
                 for sch in SCHEDULERS:
-                    tuning_cmd = f'python tune.py --model_id {model_id} --dataset_id {dataset_id} --optimizer {opt} --scheduler {sch} --batch {batch} --steps {steps} --num_samples {num_s} --epochs {epochs} --dataset_percent {dt_percent} --working_path {tuning_exp_wp}\n'
-                    tuning_cmds.append(tuning_cmd)
+                    for i in range(2):
+                        tuning_cmd = f'python tune.py --model_id {model_id} --dataset_id {dataset_id} --optimizer {opt} --scheduler {sch} --batch {batch} --steps {steps} --num_samples {num_s} --epochs {epochs} --dataset_percent {dt_percent} --working_path {tuning_exp_wp} --loss {i}\n'
+                        tuning_cmds.append(tuning_cmd)
 
     with open("tuning_cmd.txt", 'w') as f:
         f.writelines(tuning_cmds)
