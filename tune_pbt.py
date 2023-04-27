@@ -17,6 +17,9 @@ from Configs.tuning_resources import TUNING_RES
 # from Configs.search_spaces_tune import OPTIMIZERS_SEARCH_TUNE, SCHEDULERS_SEARCH_TUNE
 from Configs.search_spaces_pbt import OPTIMIZERS_SEARCH_PBT, SCHEDULERS_SEARCH_PBT
 
+# global device definition 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 parser = argparse.ArgumentParser(description='Retrieve tuning params')
 parser.add_argument('-opt', '--optimizer',
                     default='SGD',
@@ -133,9 +136,9 @@ if __name__ == '__main__':
     trainable_with_resources = tune.with_resources(
         tune.with_parameters(
             tune_attack,
-            model=model,
-            samples=samples,
-            labels=labels,
+            model=torch.nn.DataParallel(model).to(device),
+            samples=samples.to(device),
+            labels=labels.to(device),
             attack_params=attack_params,
             epochs=tune_config['epochs']
         ),

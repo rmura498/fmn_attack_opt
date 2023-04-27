@@ -1,3 +1,4 @@
+from fmn_attack_opt.Configs.tuning_resources import TUNING_RES
 import ray
 from ray.air import session
 from ray import tune
@@ -12,7 +13,10 @@ from robustbench.utils import load_model
 from Utils.datasets import load_dataset
 from Attacks.FMN.FMNOpt import FMNOpt
 
-ray.init()
+# global device definition 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+ray.init(num_gpus=2)
 adam = True
 
 search_space_SGD = {
@@ -68,14 +72,11 @@ def objective(config, model, samples, labels):
 trainable_with_resources = tune.with_resources(
     tune.with_parameters(
         objective,
-        model=model,
-        samples=samples,
-        labels=labels
+        model=torch.nn.DataParallel(model).to(device),
+        samples=samples.to(device),
+        labels=labels.to(device),
     ),
-    resources={
-        'cpu': 6,
-        'cpu': 6
-    }
+    resources=TUNING_RES
 )
 
 mode = 'min'

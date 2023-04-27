@@ -19,6 +19,7 @@ or cpu and gpu x trial
 """
 
 TUNING_RES = {
+    'gpu':2,
     'cpu': 6,
     'cpu': 6
 }
