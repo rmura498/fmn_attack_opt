@@ -51,9 +51,9 @@ SCHEDULERS_SEARCH_TUNE = {
     'MultiStepLR':
         {
             'milestones': lambda steps: tune.grid_search(
-                [np.linspace(0, steps, 10),
-                 np.linspace(0, steps, 5),
-                 np.linspace(0, steps, 3)]
+                [tuple(np.linspace(0, steps, 10)),
+                 tuple(np.linspace(0, steps, 5)),
+                 tuple(np.linspace(0, steps, 3))]
             ),
             'gamma': tune.uniform(0.1, 0.9)
         },
