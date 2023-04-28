@@ -171,7 +171,7 @@ if __name__ == '__main__':
         ),
         run_config=air.RunConfig(tuning_exp_name, local_dir=working_path)
     )
-
+    
     results = tuner.fit()
 
     # Checking best result and best config
@@ -183,6 +183,8 @@ if __name__ == '__main__':
         'distance': best_result.metrics['distance'],
         'best_config': best_result.config
     }
+    # highlighting end of run
+    print("\n+++++COMPLETE LOG AT: {0}/{1}+++++\n".format(working_path,tuning_exp_name))
 
     filename = os.path.join(tuning_exp_path, "best_result.pkl")
     with open(filename, "wb") as file:
