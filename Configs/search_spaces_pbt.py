@@ -68,7 +68,7 @@ SCHEDULERS_SEARCH_PBT = {
     ],
     'MultiStepLR': [
         {
-            'milestones': lambda steps: np.linspace(0, steps, 10),
+            'milestones': lambda steps: tuple(np.linspace(0, steps, 10)),
             'gamma': tune.uniform(0.1, 0.9)
         },
         {
