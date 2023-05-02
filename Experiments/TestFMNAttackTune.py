@@ -22,7 +22,10 @@ class TestFMNAttackTune(TestAttack):
                  scheduler='CosineAnnealingLR',
                  create_exp_folder=True,
                  optimizer_config=None,
-                 scheduler_config=None
+                 scheduler_config=None,
+                 loss = 'LL',
+                 device='cpu',
+                 tuning_dataset_percent=0.5
                  ):
         super().__init__(
             model,
@@ -49,6 +52,7 @@ class TestFMNAttackTune(TestAttack):
                                                    shuffle=False)
 
         self.samples, self.labels = next(iter(self.dl_test))
+        self.loss = True if loss == 'LL' else False
 
         self.attack = self.attack(
             model=self.model,
@@ -59,7 +63,9 @@ class TestFMNAttackTune(TestAttack):
             optimizer=self.optimizer_name,
             scheduler=self.scheduler_name,
             optimizer_config=self.optimizer_config,
-            scheduler_config=self.scheduler_config
+            scheduler_config=self.scheduler_config,
+            logit_loss = self.loss,
+            device=device
         )
 
         self.standard_accuracy = None

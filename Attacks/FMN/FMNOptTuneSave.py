@@ -27,7 +27,8 @@ class FMNOptTuneSave(FMNOptTune):
                  scheduler='CosineAnnealingLR',
                  optimizer_config=None,
                  scheduler_config=None,
-                 device='cpu'
+                 device='cpu',
+                 logit_loss = True
                  ):
         super().__init__(
             model,
@@ -59,6 +60,7 @@ class FMNOptTuneSave(FMNOptTune):
         # storing initial labels (clean ones)
         self.attack_data['labels'].append(self.labels.clone())
         self.attack_data['inputs'] = self.inputs.clone()
+        self.logit_loss = logit_loss
 
     def run(self):
         dual, projection, _ = self._dual_projection_mid_points[self.norm]
@@ -90,19 +92,20 @@ class FMNOptTuneSave(FMNOptTune):
             _epsilon = epsilon.clone()
             _distance = torch.linalg.norm((adv_inputs - self.inputs).data.flatten(1), dim=1, ord=self.norm)
 
-            '''
-            if i == 0:
-                labels_infhot = torch.zeros_like(logits).scatter_(1, self.labels.unsqueeze(1), float('inf'))
-                logit_diff_func = partial(difference_of_logits, labels=self.labels, labels_infhot=labels_infhot)
 
-            logit_diffs = logit_diff_func(logits=logits)
-            loss = -(multiplier * logit_diffs)
-            loss.sum().backward()
-            '''
-            c_loss = nn.CrossEntropyLoss()
-            loss = -c_loss(logits, self.labels)
-            loss.sum().backward()
+            if self.logit_loss:
+                if i == 0:
+                    labels_infhot = torch.zeros_like(logits).scatter_(1, self.labels.unsqueeze(1), float('inf'))
+                    logit_diff_func = partial(difference_of_logits, labels=self.labels, labels_infhot=labels_infhot)
 
+                logit_diffs = logit_diff_func(logits=logits)
+                loss = -(multiplier * logit_diffs)
+
+            else:
+                c_loss = nn.CrossEntropyLoss()
+                loss = -c_loss(logits, self.labels)
+
+            loss.sum().backward()
             delta_grad = delta.grad.data
 
             is_adv = (pred_labels == self.labels) if self.targeted else (pred_labels != self.labels)
