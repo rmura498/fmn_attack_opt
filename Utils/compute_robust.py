@@ -1,4 +1,10 @@
 import numpy as np
+import torch
+
+
+def compute_best_distance(best_adv, inputs):
+    best_distance = torch.linalg.norm((best_adv - inputs).data.flatten(1), dim=1, ord=float('inf'))
+    return best_distance
 
 
 def compute_robust(exp_distances, best_distance):

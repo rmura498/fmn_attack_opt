@@ -19,7 +19,7 @@ OPTIMIZERS_SEARCH_TUNE = {
     },
     'Adam':
     {
-        'lr': tune.loguniform(10, 100),
+        'lr': tune.loguniform(1, 100),
         'weight_decay': tune.loguniform(0.01, 1),
         'eps': 1e-8,
         'amsgrad': False,
