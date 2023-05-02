@@ -1,5 +1,5 @@
 import os.path
-import pickle
+import pickle, math
 
 import torch
 
@@ -13,6 +13,7 @@ class TestFMNAttackTune(TestAttack):
     def __init__(self,
                  model,
                  dataset,
+                 model_name,
                  attack=FMNOptTuneSave,
                  norm='inf',
                  steps=10,
@@ -32,17 +33,21 @@ class TestFMNAttackTune(TestAttack):
             batch_size,
             optimizer,
             scheduler,
-            create_exp_folder
+            create_exp_folder,
+            loss=loss,
+            model_name=model_name
         )
-
-        self.optimizer_name = optimizer
-        self.scheduler_name = scheduler
         self.optimizer_config = optimizer_config
         self.scheduler_config = scheduler_config
 
-        self.dl_test = torch.utils.data.DataLoader(dataset,
+        # load only the test part of the dataset (e.g. 50% was used for tuning, rest is for testing/val purposes)
+        dataset_frac = list(range(math.floor(len(dataset) * tuning_dataset_percent)+1, len(dataset)))
+        dataset_frac = torch.utils.data.Subset(dataset, dataset_frac)
+
+        self.dl_test = torch.utils.data.DataLoader(dataset_frac,
                                                    batch_size=self.batch_size,
                                                    shuffle=False)
+
         self.samples, self.labels = next(iter(self.dl_test))
 
         self.attack = self.attack(

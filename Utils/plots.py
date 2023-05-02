@@ -4,6 +4,10 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
+from Utils.compute_robust import compute_robust
+
+matplotlib.use("TkAgg")
+
 
 def plot_distance(exps_epsilon_per_iter=[],
                   exps_distance_per_iter=[],
@@ -82,15 +86,7 @@ def plot_epsilon_robust(exps_distances=[],
         steps = len(exp_distances)
         batch_size = len(exp_distances[0])
 
-        distances = np.array([])
-        robust_per_iter = []
-        for distance in exp_distances:
-            # checking, for each step, the epsilon tensor
-            distances = np.concatenate((distances, distance.numpy()), axis=None)
-            robust_per_iter += [
-                (np.count_nonzero(dist > best_distances[i])/batch_size)
-                for dist in distance
-            ]
+        distances, robust_per_iter = compute_robust(exp_distances, best_distances[i])
 
         distances = np.array(distances)
         distances.sort()

@@ -6,7 +6,7 @@ from Utils.plots import plot_epsilon_robust, plot_distance
 
 if __name__ == '__main__':
     experiments = [
-        'DMPreActResNet_CIFAR10_241829'
+        'DMPreActResNet_CIFAR10_32_200_Adam_CosineAnnealingLR_LL'
     ]
 
     exps_data = []
