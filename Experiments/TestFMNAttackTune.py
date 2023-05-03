@@ -112,11 +112,17 @@ class TestFMNAttackTune(TestAttack):
 
         # Save attack lists
         data_path = os.path.join(self.exp_path, "labels.pkl")
+        torch.save(self.labels, data_path)
+        '''
         with open(data_path, "wb") as file:
             pickle.dump(self.labels, file)
+        '''
 
         for attack_list in self.attack.attack_data:
             data_path = os.path.join(self.exp_path, f"{attack_list}.pkl")
+            torch.save(self.attack.attack_data[attack_list], data_path)
 
+            '''
             with open(data_path, "wb") as file:
                 pickle.dump(self.attack.attack_data[attack_list], file)
+            '''
