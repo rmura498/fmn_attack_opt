@@ -29,12 +29,14 @@ if __name__ == '__main__':
 
         try:
             with open(os.path.join("Experiments", filename, 'distance.pkl'), 'rb') as file:
-                # distance = pickle.load(file)
-                distance = torch.load(file, map_location=device)
+                distance = pickle.load(file)
+                #distance = torch.load(file, map_location=device)
             with open(os.path.join("Experiments", filename, 'best_adv.pkl'), 'rb') as file:
-                best_adv = torch.load(file, map_location=device)
+                best_adv = pickle.load(file)
+                #best_adv = torch.load(file, map_location=device)
             with open(os.path.join("Experiments", filename, 'inputs.pkl'), 'rb') as file:
-                inputs = torch.load(file, map_location=device)
+                inputs = pickle.load(file)
+                #inputs = torch.load(file, map_location=device)
         except FileNotFoundError:
             continue
 
