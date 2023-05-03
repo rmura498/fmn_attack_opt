@@ -46,14 +46,39 @@ if __name__ == '__main__':
         idx = find_nearest(distances_flat, 8/255)
         std_robust = robust_per_iter[idx]
 
-        model_conf_key = f'{optimizer}_{scheduler}_{loss}'
-        if model not in models_confs:
-            models_confs[model] = {}
 
-        models_confs[model][model_conf_key] = std_robust
+        model_id = models_ids[model]
 
-    models_confs_df = pd.DataFrame(models_confs)
+
+        tune_conf = BIG_DF.loc[(BIG_DF['Optimizer'] == optimizer) &
+                                (BIG_DF['Scheduler'] == scheduler) &
+                                (BIG_DF['Loss'] == loss)]
+        robust_values = np.full(len(models_ids), None)
+        robust_values[int(model_id[-1])] = std_robust
+
+        if tune_conf.empty:
+            values = [optimizer, scheduler, loss]
+
+            values.extend(robust_values)
+            new_series = pd.Series(dict(zip(df_columns, values)))
+
+            BIG_DF = pd.concat([BIG_DF, new_series.to_frame().T], ignore_index=True)
+
+
+        else:
+            BIG_DF.loc[(BIG_DF['Optimizer'] == optimizer) &
+                       (BIG_DF['Scheduler'] == scheduler) &
+                       (BIG_DF['Loss'] == loss), [f'{model_id}']] = std_robust
+
+
+
+    BIG_DF['Mean'] = BIG_DF.iloc[:, 3:11].mean(axis=1)
+    BIG_DF.sort_values(inplace=True, by=['Optimizer'])
+    print(BIG_DF)
+
+    with open("tuning_comparison.csv", "w+") as file:
+        file.writelines(BIG_DF.to_csv(index=False))
 
     with open("tuning_comparison_latex.txt", "w+") as file:
-        latex_string = models_confs_df.to_latex(index=True, float_format="{:.4f}".format)
+        latex_string = BIG_DF.to_latex(index=True, float_format="{:.4f}".format)
         file.writelines(latex_string)
