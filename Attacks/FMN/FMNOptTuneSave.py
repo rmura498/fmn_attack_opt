@@ -27,7 +27,8 @@ class FMNOptTuneSave(FMNOptTune):
                  scheduler='CosineAnnealingLR',
                  optimizer_config=None,
                  scheduler_config=None,
-                 device='cpu'
+                 device=torch.device('cpu'),
+                 logit_loss = True
                  ):
         super().__init__(
             model,
@@ -44,7 +45,8 @@ class FMNOptTuneSave(FMNOptTune):
             scheduler,
             optimizer_config,
             scheduler_config,
-            device
+            device=device,
+            logit_loss=logit_loss
         )
 
         self.attack_data = {
@@ -83,6 +85,9 @@ class FMNOptTuneSave(FMNOptTune):
             delta_norm = delta.data.flatten(1).norm(p=self.norm, dim=1)
             adv_inputs = self.inputs + delta
 
+            delta_norm.to(self.device)
+            adv_inputs.to(self.device)
+
             logits = self.model(adv_inputs)
             pred_labels = logits.argmax(dim=1)
 
@@ -90,19 +95,20 @@ class FMNOptTuneSave(FMNOptTune):
             _epsilon = epsilon.clone()
             _distance = torch.linalg.norm((adv_inputs - self.inputs).data.flatten(1), dim=1, ord=self.norm)
 
-            '''
-            if i == 0:
-                labels_infhot = torch.zeros_like(logits).scatter_(1, self.labels.unsqueeze(1), float('inf'))
-                logit_diff_func = partial(difference_of_logits, labels=self.labels, labels_infhot=labels_infhot)
 
-            logit_diffs = logit_diff_func(logits=logits)
-            loss = -(multiplier * logit_diffs)
-            loss.sum().backward()
-            '''
-            c_loss = nn.CrossEntropyLoss()
-            loss = -c_loss(logits, self.labels)
-            loss.sum().backward()
+            if self.logit_loss:
+                if i == 0:
+                    labels_infhot = torch.zeros_like(logits).scatter_(1, self.labels.unsqueeze(1), float('inf'))
+                    logit_diff_func = partial(difference_of_logits, labels=self.labels, labels_infhot=labels_infhot)
 
+                logit_diffs = logit_diff_func(logits=logits)
+                loss = -(multiplier * logit_diffs)
+
+            else:
+                c_loss = nn.CrossEntropyLoss()
+                loss = -c_loss(logits, self.labels)
+
+            loss.sum().backward()
             delta_grad = delta.grad.data
 
             is_adv = (pred_labels == self.labels) if self.targeted else (pred_labels != self.labels)

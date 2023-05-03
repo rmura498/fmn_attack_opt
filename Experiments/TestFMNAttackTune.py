@@ -1,5 +1,5 @@
 import os.path
-import pickle
+import pickle, math
 
 import torch
 
@@ -13,6 +13,7 @@ class TestFMNAttackTune(TestAttack):
     def __init__(self,
                  model,
                  dataset,
+                 model_name,
                  attack=FMNOptTuneSave,
                  norm='inf',
                  steps=10,
@@ -21,7 +22,10 @@ class TestFMNAttackTune(TestAttack):
                  scheduler='CosineAnnealingLR',
                  create_exp_folder=True,
                  optimizer_config=None,
-                 scheduler_config=None
+                 scheduler_config=None,
+                 loss = 'LL',
+                 device=torch.device('cpu'),
+                 tuning_dataset_percent=0.5
                  ):
         super().__init__(
             model,
@@ -32,29 +36,40 @@ class TestFMNAttackTune(TestAttack):
             batch_size,
             optimizer,
             scheduler,
-            create_exp_folder
+            create_exp_folder,
+            loss=loss,
+            model_name=model_name,
         )
-
-        self.optimizer_name = optimizer
-        self.scheduler_name = scheduler
+        self.device = device
         self.optimizer_config = optimizer_config
         self.scheduler_config = scheduler_config
 
-        self.dl_test = torch.utils.data.DataLoader(dataset,
+        # load only the test part of the dataset (e.g. 50% was used for tuning, rest is for testing/val purposes)
+        dataset_frac = list(range(math.floor(len(dataset) * tuning_dataset_percent)+1, len(dataset)))
+        dataset_frac = torch.utils.data.Subset(dataset, dataset_frac)
+
+        self.dl_test = torch.utils.data.DataLoader(dataset_frac,
                                                    batch_size=self.batch_size,
                                                    shuffle=False)
+
         self.samples, self.labels = next(iter(self.dl_test))
+        self.loss = True if loss == 'LL' else False
+
+        self.samples.to(self.device)
+        self.labels.to(self.device)
 
         self.attack = self.attack(
             model=self.model,
-            inputs=self.samples.clone(),
+            inputs=self.samples,
             labels=self.labels,
             norm=self.norm,
             steps=self.steps,
             optimizer=self.optimizer_name,
             scheduler=self.scheduler_name,
             optimizer_config=self.optimizer_config,
-            scheduler_config=self.scheduler_config
+            scheduler_config=self.scheduler_config,
+            logit_loss = self.loss,
+            device=self.device
         )
 
         self.standard_accuracy = None
@@ -64,7 +79,7 @@ class TestFMNAttackTune(TestAttack):
 
     def run(self):
         distance, self.best_adv = self.attack.run()
-
+        '''
         standard_acc = accuracy(self.model, self.samples, self.labels)
         model_robust_acc = accuracy(self.model, self.best_adv, self.labels)
         print("Standard Accuracy", standard_acc)
@@ -72,6 +87,7 @@ class TestFMNAttackTune(TestAttack):
 
         self.standard_accuracy = standard_acc
         self.robust_accuracy = model_robust_acc
+        '''
         return self.best_adv
 
     def plot(self):
@@ -96,11 +112,17 @@ class TestFMNAttackTune(TestAttack):
 
         # Save attack lists
         data_path = os.path.join(self.exp_path, "labels.pkl")
+        torch.save(self.labels, data_path)
+        '''
         with open(data_path, "wb") as file:
             pickle.dump(self.labels, file)
+        '''
 
         for attack_list in self.attack.attack_data:
             data_path = os.path.join(self.exp_path, f"{attack_list}.pkl")
+            torch.save(self.attack.attack_data[attack_list], data_path)
 
+            '''
             with open(data_path, "wb") as file:
                 pickle.dump(self.attack.attack_data[attack_list], file)
+            '''

@@ -6,7 +6,7 @@ from Utils.plots import plot_epsilon_robust, plot_distance
 
 if __name__ == '__main__':
     experiments = [
-        'DMPreActResNet_CIFAR10_241829'
+        'Gowal2021Improving_28_10_ddpm_100m_CIFAR10_Adam_ReduceLROnPlateau_LL'
     ]
 
     exps_data = []
@@ -42,9 +42,14 @@ if __name__ == '__main__':
 
         for data in exp_data:
             data_path = os.path.join(exp_path, f"{data}.pkl")
+            '''
             with open(data_path, 'rb') as file:
-                data_load = pickle.load(file)
+                # data_load = pickle.load(file)
+                data_load = torch.load(file, map_location=torch.device('cpu'))
                 exp_data[data] = data_load
+            '''
+            data_load = torch.load(data_path, map_location=torch.device('cpu'))
+            exp_data[data] = data_load
 
         exps_data.append(exp_data)
         exps_params.append(exp_params)

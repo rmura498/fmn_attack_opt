@@ -14,7 +14,9 @@ class TestAttack(ABC):
                  optimizer=None,
                  scheduler=None,
                  AA=False,
-                 create_exp_folder=True):
+                 create_exp_folder=True,
+                 loss='LL',
+                 model_name=''):
         self.model = model
         self.dataset = dataset
         self.attack = attack
@@ -25,14 +27,18 @@ class TestAttack(ABC):
         self.scheduler = scheduler
         self.exp_path = None
         self.create_exp_folder = create_exp_folder
+        self.optimizer_name = optimizer
+        self.scheduler_name = scheduler
+        self.model_name = model_name
 
         # Create experiment folder
         if self.create_exp_folder:
-            self.model_name = self.model.__class__.__name__
+            if self.model_name == '':
+                self.model_name = self.model.__class__.__name__
             self.dataset_name = self.dataset.__class__.__name__
 
-            time = datetime.now().strftime("%d%H%M")
-            experiment = f'{self.model_name}_{self.dataset_name}_{time}'
+            # time = datetime.now().strftime("%d%H%M")
+            experiment = f'{self.model_name}_{self.dataset_name}_{self.optimizer_name}_{self.scheduler_name}_{loss}'
             path = os.path.join("Experiments", experiment)
             if not os.path.exists(path):
                 os.makedirs(path)
