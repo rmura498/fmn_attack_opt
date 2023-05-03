@@ -4,8 +4,10 @@ import os, pickle, math
 import torch
 
 from Utils.compute_robust import compute_robust, compute_best_distance
+from Configs.model_dataset import MODEL_DATASET
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 def find_nearest(array, value):
     idx = np.searchsorted(array, value, side="left")
@@ -16,7 +18,15 @@ def find_nearest(array, value):
 
 
 if __name__ == '__main__':
-    models_confs = {}
+    models_ids = {}
+    for model_id in MODEL_DATASET:
+        models_ids[MODEL_DATASET[model_id]['model_name']] = f'M{model_id}'
+
+    df_columns = ['Optimizer', 'Scheduler', 'Loss']
+    for model_id in models_ids:
+        df_columns.append(models_ids[model_id])
+
+    BIG_DF = pd.DataFrame(columns=df_columns)
 
     filenames = next(os.walk("Experiments"))[1]
     filenames = [file for file in filenames if '__pycache__' not in file]

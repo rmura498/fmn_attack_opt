@@ -21,8 +21,7 @@ if __name__ == '__main__':
 
     tuning_cmds = []
     filenames = os.listdir("./Configs/ModelsBestConfigs")
-    print(len(filenames))
-    exit(0)
+
     for filename in filenames:
         tuning_cmd = f'python run_attack.py --batch {batch} --steps {steps} --dataset_percent {dt_percent} --fmn_config ./Configs/ModelsBestConfigs/{filename}\n'
         tuning_cmds.append(tuning_cmd)
