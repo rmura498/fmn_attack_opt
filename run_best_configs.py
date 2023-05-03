@@ -4,10 +4,10 @@ import os, argparse
 
 parser = argparse.ArgumentParser(description='Retrieve tuning params')
 parser.add_argument('-b', '--batch',
-                    default=10,
+                    default=32,
                     help='Provide the batch size')
 parser.add_argument('-s', '--steps',
-                    default=50,
+                    default=200,
                     help='Provide the step size')
 parser.add_argument('-dp', '--dataset_percent',
                     default=0.5,
