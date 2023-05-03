@@ -118,6 +118,13 @@ def plot_epsilon_robust(exps_distances=[],
 
 '''
 def plot_2D_attack(clf, target, labels, n_classes):
+    """
+    Args:
+        clf: the classifier
+        target: True if the attack is targeted
+        labels: true labels
+        n_classes: total number of classes
+    """
     if target is not False:
         target_classes = (labels + 1) % n_classes * target
         criterion = fb.criteria.TargetedMisclassification(target_classes)
