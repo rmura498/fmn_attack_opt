@@ -18,6 +18,8 @@ from Configs.search_spaces_tune import OPTIMIZERS_SEARCH_TUNE, SCHEDULERS_SEARCH
 
 # global device definition 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+os.environ["TUNE_DISABLE_AUTO_CALLBACK_LOGGERS"] = "1"
+os.environ["TUNE_MAX_PENDING_TRIALS_PG"] = "1"
 
 parser = argparse.ArgumentParser(description='Retrieve tuning params')
 parser.add_argument('-opt', '--optimizer',
@@ -139,7 +141,7 @@ if __name__ == '__main__':
     search_space = {
         'opt_s': optimizer_search,
         'sch_s': scheduler_search
-    }
+    }  
 
     trainable_with_resources = tune.with_resources(
         tune.with_parameters(
@@ -169,8 +171,15 @@ if __name__ == '__main__':
             search_alg=algo,
             scheduler=tune_scheduler
         ),
-        run_config=air.RunConfig(tuning_exp_name, local_dir=working_path)
-    )
+        run_config=air.RunConfig(tuning_exp_name, 
+                                 local_dir=working_path, 
+                                 checkpoint_config=air.CheckpointConfig(
+                                                    checkpoint_at_end=False,
+                                                    checkpoint_frequency=0,
+                                                    num_to_keep=None),  
+                                 log_to_file=False, 
+                                 ) 
+                                 )
     
     results = tuner.fit()
 
