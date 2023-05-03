@@ -24,7 +24,7 @@ class TestFMNAttackTune(TestAttack):
                  optimizer_config=None,
                  scheduler_config=None,
                  loss = 'LL',
-                 device='cpu',
+                 device=torch.device('cpu'),
                  tuning_dataset_percent=0.5
                  ):
         super().__init__(
@@ -38,8 +38,9 @@ class TestFMNAttackTune(TestAttack):
             scheduler,
             create_exp_folder,
             loss=loss,
-            model_name=model_name
+            model_name=model_name,
         )
+        self.device = device
         self.optimizer_config = optimizer_config
         self.scheduler_config = scheduler_config
 
@@ -54,9 +55,12 @@ class TestFMNAttackTune(TestAttack):
         self.samples, self.labels = next(iter(self.dl_test))
         self.loss = True if loss == 'LL' else False
 
+        self.samples.to(self.device)
+        self.labels.to(self.device)
+
         self.attack = self.attack(
             model=self.model,
-            inputs=self.samples.clone(),
+            inputs=self.samples,
             labels=self.labels,
             norm=self.norm,
             steps=self.steps,
@@ -65,7 +69,7 @@ class TestFMNAttackTune(TestAttack):
             optimizer_config=self.optimizer_config,
             scheduler_config=self.scheduler_config,
             logit_loss = self.loss,
-            device=device
+            device=self.device
         )
 
         self.standard_accuracy = None
@@ -75,7 +79,7 @@ class TestFMNAttackTune(TestAttack):
 
     def run(self):
         distance, self.best_adv = self.attack.run()
-
+        '''
         standard_acc = accuracy(self.model, self.samples, self.labels)
         model_robust_acc = accuracy(self.model, self.best_adv, self.labels)
         print("Standard Accuracy", standard_acc)
@@ -83,6 +87,7 @@ class TestFMNAttackTune(TestAttack):
 
         self.standard_accuracy = standard_acc
         self.robust_accuracy = model_robust_acc
+        '''
         return self.best_adv
 
     def plot(self):

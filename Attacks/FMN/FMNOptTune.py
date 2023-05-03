@@ -35,7 +35,7 @@ class FMNOptTune(Attack):
                  scheduler='CosineAnnealingLR',
                  optimizer_config=None,
                  scheduler_config=None,
-                 device='cpu',
+                 device=torch.device('cpu'),
                  logit_loss = True
                  ):
         self.model = model
@@ -64,9 +64,9 @@ class FMNOptTune(Attack):
 
         _worst_norm = torch.maximum(inputs, 1 - inputs).flatten(1).norm(p=self.norm, dim=1)
         self.init_trackers = {
-            'worst_norm': _worst_norm,
-            'best_norm': _worst_norm.clone(),
-            'best_adv': self.inputs.clone(),
+            'worst_norm': _worst_norm.to(self.device),
+            'best_norm': _worst_norm.clone().to(self.device),
+            'best_adv': self.inputs.clone().to(self.device),
             'adv_found': torch.zeros(self.batch_size, dtype=torch.bool, device=self.device)
         }
 

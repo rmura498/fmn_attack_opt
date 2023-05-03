@@ -27,7 +27,7 @@ class FMNOptTuneSave(FMNOptTune):
                  scheduler='CosineAnnealingLR',
                  optimizer_config=None,
                  scheduler_config=None,
-                 device='cpu',
+                 device=torch.device('cpu'),
                  logit_loss = True
                  ):
         super().__init__(
@@ -45,7 +45,8 @@ class FMNOptTuneSave(FMNOptTune):
             scheduler,
             optimizer_config,
             scheduler_config,
-            device
+            device=device,
+            logit_loss=logit_loss
         )
 
         self.attack_data = {
@@ -60,7 +61,6 @@ class FMNOptTuneSave(FMNOptTune):
         # storing initial labels (clean ones)
         self.attack_data['labels'].append(self.labels.clone())
         self.attack_data['inputs'] = self.inputs.clone()
-        self.logit_loss = logit_loss
 
     def run(self):
         dual, projection, _ = self._dual_projection_mid_points[self.norm]
@@ -84,6 +84,9 @@ class FMNOptTuneSave(FMNOptTune):
 
             delta_norm = delta.data.flatten(1).norm(p=self.norm, dim=1)
             adv_inputs = self.inputs + delta
+
+            delta_norm.to(self.device)
+            adv_inputs.to(self.device)
 
             logits = self.model(adv_inputs)
             pred_labels = logits.argmax(dim=1)

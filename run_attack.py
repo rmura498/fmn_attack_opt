@@ -50,6 +50,7 @@ if __name__ == '__main__':
     model = load_model(model_name, 'cifar10')
     dataset = load_dataset('cifar10')
     model.eval()
+    model.to(device)
 
     # load fmn pkl config file
     try:
@@ -84,9 +85,8 @@ if __name__ == '__main__':
                             scheduler_config=scheduler_config,
                             create_exp_folder=True,
                             tuning_dataset_percent=tuning_dataset_percent,
-                            model_name=model_name)
+                            model_name=model_name,
+                            device=device)
     exp.run()
     exp.save_data()
-
-
 
