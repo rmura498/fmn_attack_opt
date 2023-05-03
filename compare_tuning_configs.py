@@ -1,9 +1,11 @@
 import pandas as pd
 import numpy as np
 import os, pickle, math
+import torch
 
 from Utils.compute_robust import compute_robust, compute_best_distance
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def find_nearest(array, value):
     idx = np.searchsorted(array, value, side="left")
@@ -27,11 +29,12 @@ if __name__ == '__main__':
 
         try:
             with open(os.path.join("Experiments", filename, 'distance.pkl'), 'rb') as file:
-                distance = pickle.load(file)
+                # distance = pickle.load(file)
+                distance = torch.load(file, map_location=device)
             with open(os.path.join("Experiments", filename, 'best_adv.pkl'), 'rb') as file:
-                best_adv = pickle.load(file)
+                best_adv = torch.load(file, map_location=device)
             with open(os.path.join("Experiments", filename, 'inputs.pkl'), 'rb') as file:
-                inputs = pickle.load(file)
+                inputs = torch.load(file, map_location=device)
         except FileNotFoundError:
             continue
 
