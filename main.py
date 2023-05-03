@@ -1,3 +1,4 @@
+import os
 import torch
 
 from Models.load_data import load_dataset
@@ -9,6 +10,9 @@ from robustbench.utils import load_model
 
 
 if __name__ == '__main__':
+    # disable json/csv/Tensorboard logger callbacks  
+    os.environ["TUNE_DISABLE_AUTO_CALLBACK_LOGGERS"] = "1"
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     autoattack_test = False
