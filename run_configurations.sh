@@ -151,7 +151,6 @@ python run_attack.py --batch 32 --steps 200 --dataset_percent 0.5 --fmn_config .
 python run_attack.py --batch 32 --steps 200 --dataset_percent 0.5 --fmn_config ./Configs/ModelsBestConfigs/Sehwag2021Proxy_ResNest152_cifar10_SGD_ReduceLROnPlateau_LL.pkl
 python run_attack.py --batch 32 --steps 200 --dataset_percent 0.5 --fmn_config ./Configs/ModelsBestConfigs/Rebuffi2021Fixing_106_16_cutmix_ddpm_cifar10_SGD_CosineAnnealingWarmRestarts_LL.pkl
 python run_attack.py --batch 32 --steps 200 --dataset_percent 0.5 --fmn_config ./Configs/ModelsBestConfigs/Gowal2021Improving_R18_ddpm_100m_cifar10_SGD_CosineAnnealingWarmRestarts_LL.pkl
-python run_attack.py --batch 32 --steps 200 --dataset_percent 0.5 --fmn_config ./Configs/ModelsBestConfigs/Gowal2021Improving_70_16_ddpm_100m_cifar10_AdamAmsgrad_CosineAnnealingWarmRestarts_CE(1).pkl
 python run_attack.py --batch 32 --steps 200 --dataset_percent 0.5 --fmn_config ./Configs/ModelsBestConfigs/Gowal2021Improving_28_10_ddpm_100m_cifar10_AdamAmsgrad_MultiStepLR_LL.pkl
 python run_attack.py --batch 32 --steps 200 --dataset_percent 0.5 --fmn_config ./Configs/ModelsBestConfigs/Wang2023Better_WRN-70-16_cifar10_SGDNesterov_CosineAnnealingLR_CE.pkl
 python run_attack.py --batch 32 --steps 200 --dataset_percent 0.5 --fmn_config ./Configs/ModelsBestConfigs/Wang2023Better_WRN-28-10_cifar10_SGDNesterov_CosineAnnealingLR_LL.pkl
