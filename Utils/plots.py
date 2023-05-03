@@ -96,7 +96,7 @@ def plot_epsilon_robust(exps_distances=[],
         ax.plot(distances,
                 robust_per_iter,
                 label='robust')
-        ax.plot(8/255, 0.5850, 'x')
+        ax.plot(8/255, 0.6344, 'x')
         ax.axvline(8/255, c='g', linewidth=1)
         ax.grid()
 
@@ -125,13 +125,15 @@ def plot_2D_attack(clf, target, labels, n_classes):
         criterion = fb.criteria.Misclassification(labels)
         target_classes = labels
 
-    image_path = "../../../images/"  # sarebbe da cambiare
+    image_path = "../../../images/"  # change the path here
     fig = CFigure(width=5, height=5)
 
     n_grid_pts = 20
 
     # Convenience function for plotting the decision function of a classifier
     fig.sp.plot_decision_regions(clf, n_grid_points=200, plot_background=False)
+    # We tried to implement the loss_fmn_fn() function
+    # this function should be changed to let the fig.sp.plot_fun generate the landscape
     fig.sp.plot_fun(func=loss_fmn_fn(),
                     multipoint=False,
                     colorbar=False,
