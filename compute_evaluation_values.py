@@ -42,6 +42,7 @@ if __name__ == '__main__':
 
     best_distances = distances.mean(axis=0)
 
+    distances = [x for l in exp_data['distance'] for x in l]
     # Compute robust per iter
     acc_distances, robust = compute_robust(distances, best_distances)
 
