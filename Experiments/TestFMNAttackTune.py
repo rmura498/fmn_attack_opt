@@ -51,26 +51,35 @@ class TestFMNAttackTune(TestAttack):
         self.dl_test = torch.utils.data.DataLoader(dataset_frac,
                                                    batch_size=self.batch_size,
                                                    shuffle=False)
+        self.dl_test_iter = iter(self.dl_test)
 
-        self.samples, self.labels = next(iter(self.dl_test))
+        # self.samples, self.labels = next(iter(self.dl_test))
         self.loss = True if loss == 'LL' else False
 
-        self.samples.to(self.device)
-        self.labels.to(self.device)
+        #self.samples.to(self.device)
+        #self.labels.to(self.device)
 
-        self.attack = self.attack(
-            model=self.model,
-            inputs=self.samples,
-            labels=self.labels,
-            norm=self.norm,
-            steps=self.steps,
-            optimizer=self.optimizer_name,
-            scheduler=self.scheduler_name,
-            optimizer_config=self.optimizer_config,
-            scheduler_config=self.scheduler_config,
-            logit_loss = self.loss,
-            device=self.device
-        )
+        self.attacks = []
+        for n in range(10):
+            samples, labels = next(self.dl_test_iter)
+            samples.to(self.device)
+            labels.to(self.device)
+
+            attack = self.attack(
+                model=self.model,
+                inputs=samples,
+                labels=labels,
+                norm=self.norm,
+                steps=self.steps,
+                optimizer=self.optimizer_name,
+                scheduler=self.scheduler_name,
+                optimizer_config=self.optimizer_config,
+                scheduler_config=self.scheduler_config,
+                logit_loss = self.loss,
+                device=self.device
+            )
+            self.attacks.append(attack)
+            del attack
 
         self.standard_accuracy = None
         self.robust_accuracy = None
@@ -78,17 +87,8 @@ class TestFMNAttackTune(TestAttack):
         self.best_adv = None
 
     def run(self):
-        distance, self.best_adv = self.attack.run()
-        '''
-        standard_acc = accuracy(self.model, self.samples, self.labels)
-        model_robust_acc = accuracy(self.model, self.best_adv, self.labels)
-        print("Standard Accuracy", standard_acc)
-        print("[FMN] Robust accuracy: ", model_robust_acc)
-
-        self.standard_accuracy = standard_acc
-        self.robust_accuracy = model_robust_acc
-        '''
-        return self.best_adv
+        for attack in self.attacks:
+            _, _ = attack.run()
 
     def plot(self):
         pass
@@ -98,8 +98,6 @@ class TestFMNAttackTune(TestAttack):
             f"Steps: {self.steps}\n",
             f"Batch size: {self.batch_size}\n",
             f"Norm: {self.norm}\n",
-            f"Standard acc: {self.standard_accuracy}\n"
-            f"Robust acc: {self.robust_accuracy}\n",
             f"Optimizer: {self.optimizer_name}\n",
             f"Scheduler: {self.scheduler_name}\n",
             f"Model: {self.model_name}\n"
@@ -110,19 +108,18 @@ class TestFMNAttackTune(TestAttack):
         with open(data_path, "w+") as file:
             file.writelines(_data)
 
-        # Save attack lists
-        data_path = os.path.join(self.exp_path, "labels.pkl")
-        torch.save(self.labels, data_path)
-        '''
-        with open(data_path, "wb") as file:
-            pickle.dump(self.labels, file)
-        '''
+        attack_data = {
+            'epsilon': [],
+            'pred_labels': [],
+            'distance': [],
+            'inputs': [],
+            'labels' : [],
+            'best_adv': []
+        }
+        for attack in self.attacks:
+            for data_key in attack.attack_data:
+                attack_data[data_key].append(attack.attack_data[data_key])
 
-        for attack_list in self.attack.attack_data:
+        for attack_list in attack_data:
             data_path = os.path.join(self.exp_path, f"{attack_list}.pkl")
-            torch.save(self.attack.attack_data[attack_list], data_path)
-
-            '''
-            with open(data_path, "wb") as file:
-                pickle.dump(self.attack.attack_data[attack_list], file)
-            '''
+            torch.save(attack_data[attack_list], data_path)
