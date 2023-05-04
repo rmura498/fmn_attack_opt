@@ -16,6 +16,7 @@ def find_nearest(array, value):
     else:
         return idx
 
+
 opt_conversion = {
     "Adam": 'Adam',
     "AdamAmsgrad": 'AdamA',
@@ -70,11 +71,10 @@ if __name__ == '__main__':
         distances_flat.sort()
         robust_per_iter.sort(reverse=True)
         idx = find_nearest(distances_flat, 8/255)
+
         std_robust = robust_per_iter[idx]
 
-
         model_id = models_ids[model]
-
 
         tune_conf = BIG_DF.loc[(BIG_DF['Optimizer'] == opt_conversion[f'{optimizer}']) &
                                 (BIG_DF['Scheduler'] == sch_conversion[f'{scheduler}']) &
@@ -89,22 +89,19 @@ if __name__ == '__main__':
             new_series = pd.Series(dict(zip(df_columns, values)))
 
             BIG_DF = pd.concat([BIG_DF, new_series.to_frame().T], ignore_index=True)
-
-
         else:
             BIG_DF.loc[(BIG_DF['Optimizer'] == opt_conversion[f'{optimizer}']) &
                        (BIG_DF['Scheduler'] == sch_conversion[f'{scheduler}']) &
                        (BIG_DF['Loss'] == loss), [f'{model_id}']] = std_robust
 
-
-
     BIG_DF['Mean'] = BIG_DF.iloc[:, 3:11].mean(axis=1)
-    BIG_DF.sort_values(inplace=True, by=['Optimizer'])
+    BIG_DF.sort_values(inplace=True, by=['Optimizer', 'Scheduler', 'Loss'], ascending=['Optimizer', 'Scheduler', 'Loss'])
+
     print(BIG_DF)
 
     with open("tuning_comparison.csv", "w+") as file:
-        file.writelines(BIG_DF.to_csv(index=False))
+        file.writelines(BIG_DF.to_csv(index=False, float_format='%.2f'))
 
     with open("tuning_comparison_latex.txt", "w+") as file:
-        latex_string = BIG_DF.to_latex(index=True, float_format="{:.4f}".format)
+        latex_string = BIG_DF.to_latex()
         file.writelines(latex_string)
