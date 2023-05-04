@@ -23,7 +23,8 @@ def load_data_txt(exp_path):
         'optimizer': None,
         'scheduler': None,
         'norm': None,
-        'batch size': None
+        'batch size': None,
+        'steps': None
     }
     data_path = os.path.join(exp_path, "data.txt")
     with open(data_path, 'r') as file:
@@ -53,8 +54,8 @@ if __name__ == '__main__':
     fig, ax = plt.subplots()
 
     # single experiment
-    steps = len(distances)
-    batch_size = len(exp_params['batch size'])
+    steps = exp_params['steps']
+    batch_size = exp_params['batch size']
 
     ax.plot(distances,
             robust,
@@ -68,7 +69,8 @@ if __name__ == '__main__':
     fontsize = rect_height_inch * 4
 
     ax.set_title(
-        f"Steps: {steps}, batch: {batch_size}, norm: {exp_params['norm']},\nOptimizer: {exp_params['optimizer']}, Scheduler: {exp_params['scheduler']}",
+        f"Steps: {steps}, batch: {batch_size}, norm: {exp_params['norm']},\n\
+        Optimizer: {exp_params['optimizer']}, Scheduler: {exp_params['scheduler']}",
         fontsize=fontsize)
 
     ax.set_xlabel("Distance")
