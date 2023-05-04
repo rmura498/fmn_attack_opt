@@ -16,6 +16,20 @@ def find_nearest(array, value):
     else:
         return idx
 
+opt_conversion = {
+    "Adam": 'Adam',
+    "AdamAmsgrad": 'AdamA',
+    "SGD": 'SGD',
+    "SGDNesterov":'SGDN'
+}
+
+sch_conversion = {
+    "CosineAnnealingLR": 'CALR',
+    "CosineAnnealingWarmRestarts": 'CAWR',
+    "MultiStepLR": 'MSLR',
+    "ReduceLROnPlateau":'RLROP'
+}
+
 
 if __name__ == '__main__':
     models_ids = {}
@@ -39,14 +53,14 @@ if __name__ == '__main__':
 
         try:
             with open(os.path.join("Experiments", filename, 'distance.pkl'), 'rb') as file:
-                distance = pickle.load(file)
-                #distance = torch.load(file, map_location=device)
+                #distance = pickle.load(file)
+                distance = torch.load(file, map_location=device)
             with open(os.path.join("Experiments", filename, 'best_adv.pkl'), 'rb') as file:
-                best_adv = pickle.load(file)
-                #best_adv = torch.load(file, map_location=device)
+                #best_adv = pickle.load(file)
+                best_adv = torch.load(file, map_location=device)
             with open(os.path.join("Experiments", filename, 'inputs.pkl'), 'rb') as file:
-                inputs = pickle.load(file)
-                #inputs = torch.load(file, map_location=device)
+                #inputs = pickle.load(file)
+                inputs = torch.load(file, map_location=device)
         except FileNotFoundError:
             continue
 
@@ -62,14 +76,14 @@ if __name__ == '__main__':
         model_id = models_ids[model]
 
 
-        tune_conf = BIG_DF.loc[(BIG_DF['Optimizer'] == optimizer) &
-                                (BIG_DF['Scheduler'] == scheduler) &
+        tune_conf = BIG_DF.loc[(BIG_DF['Optimizer'] == opt_conversion[f'{optimizer}']) &
+                                (BIG_DF['Scheduler'] == sch_conversion[f'{scheduler}']) &
                                 (BIG_DF['Loss'] == loss)]
         robust_values = np.full(len(models_ids), None)
         robust_values[int(model_id[-1])] = std_robust
 
         if tune_conf.empty:
-            values = [optimizer, scheduler, loss]
+            values = [opt_conversion[f'{optimizer}'], sch_conversion[f'{scheduler}'], loss]
 
             values.extend(robust_values)
             new_series = pd.Series(dict(zip(df_columns, values)))
@@ -78,8 +92,8 @@ if __name__ == '__main__':
 
 
         else:
-            BIG_DF.loc[(BIG_DF['Optimizer'] == optimizer) &
-                       (BIG_DF['Scheduler'] == scheduler) &
+            BIG_DF.loc[(BIG_DF['Optimizer'] == opt_conversion[f'{optimizer}']) &
+                       (BIG_DF['Scheduler'] == sch_conversion[f'{scheduler}']) &
                        (BIG_DF['Loss'] == loss), [f'{model_id}']] = std_robust
 
 
