@@ -40,17 +40,29 @@ if __name__ == '__main__':
         distance = compute_best_distance(best_adv[b], inputs[b])
         distances[b, :] = distance
 
+    distances = distances.ravel()
+
+    acc_distances = np.linspace(0, 0.2, 500)
+    robust = np.array([(distances>a).mean() for a in acc_distances])
+
+    '''
+    (distances > acc_distances[np.newaxis, :].T).mean(axis=1)
+    '''
+
+
+    '''
     best_distances = distances.mean(axis=0)
 
     distances = [x for l in exp_data['distance'] for x in l]
-    # Compute robust per iter
     acc_distances, robust = compute_robust(distances, best_distances)
 
     acc_distances = np.array(acc_distances)
-    acc_distances.sort()
-    robust.sort(reverse=True)
+    '''
+
+    # acc_distances.sort()
+    # robust.sort(reverse=True)
 
     # save merged distances and best distances (mean over best dists) as pkl
     torch.save(acc_distances, os.path.join(exp_path, 'sorted_distances.pkl'))
     torch.save(robust, os.path.join(exp_path, 'sorted_robust.pkl'))
-    torch.save(best_distances, os.path.join(exp_path, 'best_distances.pkl'))
+    # torch.save(best_distances, os.path.join(exp_path, 'best_distances.pkl'))
