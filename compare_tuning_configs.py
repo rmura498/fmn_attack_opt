@@ -75,6 +75,7 @@ if __name__ == '__main__':
         '''
 
         distances = compute_best_distance(best_adv, inputs)
+        distances = np.array(distances)
         acc_distances = np.linspace(0, 0.2, 500)
         robust = np.array([(distances > a).mean() for a in acc_distances])
 
