@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import os, pickle, math
+import os, math
 import torch
 
 from Utils.compute_robust import compute_robust, compute_best_distance
@@ -65,14 +65,22 @@ if __name__ == '__main__':
         except FileNotFoundError:
             continue
 
-        best_distance = compute_best_distance(best_adv, inputs)
-        distances_flat, robust_per_iter = compute_robust(distance, best_distance)
+        # best_distance = compute_best_distance(best_adv, inputs)
+        # distances_flat, robust_per_iter = compute_robust(distance, best_distance)
 
+        '''
         distances_flat.sort()
         robust_per_iter.sort(reverse=True)
         idx = find_nearest(distances_flat, 8/255)
+        '''
 
-        std_robust = robust_per_iter[idx]
+        distances = compute_best_distance(best_adv, inputs)
+        acc_distances = np.linspace(0, 0.2, 500)
+        robust = np.array([(distances > a).mean() for a in acc_distances])
+
+        idx = find_nearest(distances, 8 / 255)
+
+        std_robust = robust[idx]
 
         model_id = models_ids[model]
 
