@@ -44,10 +44,10 @@ if __name__ == '__main__':
     # load arguments
     batch = int(args.batch)
     steps = int(args.steps)
-    fmn_config_path = str(args.fmn_config) if args.fmn_config is not None else args.fmn_config
     tuning_dataset_percent = float(args.dataset_percent)
 
-    if fmn_config_path is not None:
+    if args.fmn_config is not None:
+        fmn_config_path = args.fmn_config
         pkl_filename = fmn_config_path.split('/')[-1]
         model_name, optimizer, scheduler, loss = splitting_pkl_name(pkl_filename)
 
@@ -76,6 +76,10 @@ if __name__ == '__main__':
     else:
         model_id = int(args.model_id)
         model_name = MODEL_DATASET[model_id]
+
+        optimizer = 'SGD'
+        scheduler = 'CosineAnnealingLR'
+        loss = 'LL'
 
         optimizer_config = {
             "lr": 1
