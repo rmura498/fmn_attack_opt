@@ -5,6 +5,7 @@ from Experiments.TestFMNAttackTune import TestFMNAttackTune
 
 from Models.load_data import load_model, load_dataset
 
+
 # global device definition
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -16,7 +17,6 @@ parser.add_argument('-s', '--steps',
                     default=100,
                     help='Provide the step size')
 parser.add_argument('-fc', '--fmn_config',
-                    default='./Configs/ModelsBestConfigs/Gowal2021Improving_28_10_ddpm_100m_cifar10_Adam_CosineAnnealingLR_CE.pkl',
                     help='Provide the path of the .pkl file which contains the best \
                     config for a given optimizer, scheduler and loss')
 parser.add_argument('-dp', '--dataset_percent',
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # load arguments
     batch = int(args.batch)
     steps = int(args.steps)
-    fmn_config_path = str(args.fmn_config)
+    fmn_config_path = str(args.fmn_config) if args.fmn_config is not None else args.fmn_config
     tuning_dataset_percent = float(args.dataset_percent)
 
     pkl_filename = fmn_config_path.split('/')[-1]
@@ -52,27 +52,36 @@ if __name__ == '__main__':
     model.eval()
     model.to(device)
 
-    # load fmn pkl config file
-    try:
-        with open(fmn_config_path, 'rb') as file:
-            fmn_config = pickle.load(file)
-    except Exception as e:
-        print("Cannot load the configuration:")
-        print(fmn_config_path)
-        exit(1)
+    if fmn_config_path is not None:
+        # load fmn pkl config file
+        try:
+            with open(fmn_config_path, 'rb') as file:
+                fmn_config = pickle.load(file)
+        except Exception as e:
+            print("Cannot load the configuration:")
+            print(fmn_config_path)
+            exit(1)
 
-    optimizer_config = fmn_config['best_config']['opt_s']
-    scheduler_config = fmn_config['best_config']['sch_s']
+        optimizer_config = fmn_config['best_config']['opt_s']
+        scheduler_config = fmn_config['best_config']['sch_s']
 
-    if scheduler == 'MultiStepLR':
-        milestones = len(scheduler_config['milestones'])
-        scheduler_config['milestones'] = np.linspace(0, steps, milestones)
+        if scheduler == 'MultiStepLR':
+            milestones = len(scheduler_config['milestones'])
+            scheduler_config['milestones'] = np.linspace(0, steps, milestones)
 
-    if scheduler == 'CosineAnnealingLR':
-        scheduler_config['T_max'] = steps
+        if scheduler == 'CosineAnnealingLR':
+            scheduler_config['T_max'] = steps
 
-    if scheduler == 'CosineAnnealingWarmRestarts':
-        scheduler_config['T_0'] = steps//2
+        if scheduler == 'CosineAnnealingWarmRestarts':
+            scheduler_config['T_0'] = steps//2
+    else:
+        optimizer_config = {
+            "lr": 1
+        }
+        scheduler_config = {
+            "T_max": steps
+        }
+
 
     exp = TestFMNAttackTune(torch.nn.DataParallel(model).to(device),
                             dataset=dataset,
