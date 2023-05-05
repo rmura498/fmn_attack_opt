@@ -4,6 +4,7 @@ import numpy as np
 from Experiments.TestFMNAttackTune import TestFMNAttackTune
 
 from Models.load_data import load_model, load_dataset
+from Configs.model_dataset import MODEL_DATASET
 
 
 # global device definition
@@ -19,6 +20,8 @@ parser.add_argument('-s', '--steps',
 parser.add_argument('-fc', '--fmn_config',
                     help='Provide the path of the .pkl file which contains the best \
                     config for a given optimizer, scheduler and loss')
+parser.add_argument('-md', '--model_id',
+                    help='Provide the model id (e.g. M0, M1 ...)')
 parser.add_argument('-dp', '--dataset_percent',
                     default=0.5,
                     help='Provide the dataset percentage which was used to tune the attack hyperparams')
@@ -44,15 +47,10 @@ if __name__ == '__main__':
     fmn_config_path = str(args.fmn_config) if args.fmn_config is not None else args.fmn_config
     tuning_dataset_percent = float(args.dataset_percent)
 
-    pkl_filename = fmn_config_path.split('/')[-1]
-    model_name, optimizer, scheduler, loss = splitting_pkl_name(pkl_filename)
-
-    model = load_model(model_name, 'cifar10')
-    dataset = load_dataset('cifar10')
-    model.eval()
-    model.to(device)
-
     if fmn_config_path is not None:
+        pkl_filename = fmn_config_path.split('/')[-1]
+        model_name, optimizer, scheduler, loss = splitting_pkl_name(pkl_filename)
+
         # load fmn pkl config file
         try:
             with open(fmn_config_path, 'rb') as file:
@@ -74,7 +72,11 @@ if __name__ == '__main__':
 
         if scheduler == 'CosineAnnealingWarmRestarts':
             scheduler_config['T_0'] = steps//2
+
     else:
+        model_id = int(args.model_id)
+        model_name = MODEL_DATASET[model_id]
+
         optimizer_config = {
             "lr": 1
         }
@@ -82,6 +84,10 @@ if __name__ == '__main__':
             "T_max": steps
         }
 
+    model = load_model(model_name, 'cifar10')
+    dataset = load_dataset('cifar10')
+    model.eval()
+    model.to(device)
 
     exp = TestFMNAttackTune(torch.nn.DataParallel(model).to(device),
                             dataset=dataset,
