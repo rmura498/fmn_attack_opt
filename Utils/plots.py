@@ -3,16 +3,19 @@ import numpy as np
 
 import matplotlib
 import matplotlib.pyplot as plt
-
+import scienceplots
 from Utils.compute_robust import compute_robust
-
-matplotlib.use("TkAgg")
+#matplotlib.use("TkAgg")
+plt.style.use(['science', 'ieee'])
 
 
 def plot_distance(exps_epsilon_per_iter=[],
                   exps_distance_per_iter=[],
                   exps_names=[],
                   exps_params=[]):
+
+
+
 
     if len(exps_epsilon_per_iter) == 0:
         print("Error: Not enough epsilon values per iter!")
@@ -63,7 +66,7 @@ def plot_distance(exps_epsilon_per_iter=[],
         ax.set_ylabel("Epsilon/Distance (x-x0)")
         ax.grid()
 
-    plt.tight_layout()
+
     plt.show()
 
 
@@ -79,7 +82,7 @@ def plot_epsilon_robust(exps_distances=[],
     n_exps = len(exps_distances)
     plot_grid_size = n_exps//2 + 1
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(3,3))
 
     for i, exp_distances in enumerate(exps_distances):
         # single experiment
@@ -92,29 +95,25 @@ def plot_epsilon_robust(exps_distances=[],
         distances.sort()
         robust_per_iter.sort(reverse=True)
 
-        ax = fig.add_subplot(plot_grid_size, plot_grid_size, i+1)
+        ax = fig.add_subplot(plot_grid_size, plot_grid_size, i + 1)
         ax.plot(distances,
-                robust_per_iter,
-                label='robust')
-        ax.plot(8/255, 0.6344, 'x')
-        ax.axvline(8/255, c='g', linewidth=1)
+                robust_per_iter)
+        ax.plot(8/255, 0.661, 'x', label='AA')
         ax.grid()
 
         dpi = fig.dpi
         rect_height_inch = ax.bbox.height / dpi
         fontsize = rect_height_inch * 4
+        ax.set_title(f"Steps: {steps}, batch: {batch_size}, norm: {exps_params[i]['norm']},"
+                     f"\nOptimizer: {exps_params[i]['optimizer']}, Scheduler: {exps_params[i]['scheduler']}",
+                     fontsize=fontsize)
+        ax.legend(loc=0, prop={'size': 8})
+        ax.set_xlabel(r"$||\boldsymbol{\delta}||_\infty$")
+        ax.set_ylabel("R. Acc.")
 
-        ax.set_title(f"Steps: {steps}, batch: {batch_size}, norm: {exps_params[i]['norm']},\nOptimizier: {exps_params[i]['optimizer']}, Scheduler: {exps_params[i]['scheduler']}", fontsize=fontsize)
 
-        ax.set_xlabel("Distance")
-        ax.set_ylabel("Robust")
-    plt.tight_layout()
-    plt.show()
-
-    # TODO: save the plot
-    # plot_name = f'plot_{steps}_{norm}'
-    # fig1.savefig(os.path.join(path, f"{plot_name}.png"))
-
+    plt.xlim([0, 0.2])
+    fig.savefig("example.pdf")
 
 '''
 def plot_2D_attack(clf, target, labels, n_classes):

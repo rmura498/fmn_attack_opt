@@ -2,11 +2,19 @@ import os
 import pickle
 import torch
 
-from Utils.plots import plot_epsilon_robust, plot_distance
+from Utils.plot_robust_vs_epsilon import plot_epsilon_robust
 
 if __name__ == '__main__':
     experiments = [
-        'Gowal2021Improving_28_10_ddpm_100m_CIFAR10_Adam_ReduceLROnPlateau_LL'
+        '1000Gowal2021Improving_70_16_ddpm_100m_CIFAR10_Adam_ReduceLROnPlateau_LL',
+        "1000Sehwag2021Proxy_ResNest152_CIFAR10_Adam_ReduceLROnPlateau_LL",
+        "1000Sehwag2021Proxy_ResNest152_CIFAR10_Adam_ReduceLROnPlateau_LL",
+        "1000Sehwag2021Proxy_ResNest152_CIFAR10_Adam_ReduceLROnPlateau_LL",
+        "1000Sehwag2021Proxy_ResNest152_CIFAR10_Adam_ReduceLROnPlateau_LL",
+        "1000Sehwag2021Proxy_ResNest152_CIFAR10_Adam_ReduceLROnPlateau_LL",
+        "1000Sehwag2021Proxy_ResNest152_CIFAR10_Adam_ReduceLROnPlateau_LL",
+        "1000Sehwag2021Proxy_ResNest152_CIFAR10_Adam_ReduceLROnPlateau_LL",
+        "1000Sehwag2021Proxy_ResNest152_CIFAR10_Adam_ReduceLROnPlateau_LL"
     ]
 
     exps_data = []
@@ -72,9 +80,10 @@ if __name__ == '__main__':
         best_distances=best_distances
     )
 
-    plot_distance([exp_data['epsilon']
+"""    plot_distance([exp_data['epsilon']
                    for exp_data in exps_data],
                   [exp_data['distance']
                    for exp_data in exps_data],
                   exps_names=experiments,
                   exps_params=exps_params)
+"""

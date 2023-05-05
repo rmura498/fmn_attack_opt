@@ -98,6 +98,8 @@ class TestFMNAttackTune(TestAttack):
             f"Steps: {self.steps}\n",
             f"Batch size: {self.batch_size}\n",
             f"Norm: {self.norm}\n",
+            f"Standard acc: {self.standard_accuracy}\n"
+            f"Robust acc: {self.robust_accuracy}\n",
             f"Optimizer: {self.optimizer_name}\n",
             f"Scheduler: {self.scheduler_name}\n",
             f"Model: {self.model_name}\n"
