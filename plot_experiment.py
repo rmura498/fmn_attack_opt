@@ -39,6 +39,7 @@ def load_data_txt(exp_path):
                         exp_params[match] = int(exp_params[match])
     return exp_params
 
+
 if __name__ == '__main__':
     exp_name = args.exp_name
     exp_path = os.path.join("Experiments", exp_name)
