@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     else:
         model_id = int(args.model_id)
-        model_name = MODEL_DATASET[model_id]
+        model_name = MODEL_DATASET[model_id]['model_name']
 
         optimizer = 'SGD'
         scheduler = 'CosineAnnealingLR'
