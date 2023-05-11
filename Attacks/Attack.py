@@ -11,6 +11,6 @@ class Attack(ABC):
         pass
 
     @abstractmethod
-    def run(self):
+    def run(self, config):
         pass
 

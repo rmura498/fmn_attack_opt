@@ -1,21 +1,29 @@
-import os.path
-import numpy as np
-import matplotlib.pyplot as plt
-
 import torch
+import numpy as np
 
-from .metrics import loss_fmn_fn
+import matplotlib
+import matplotlib.pyplot as plt
+import scienceplots
+from Utils.compute_robust import compute_robust
+#matplotlib.use("TkAgg")
+plt.style.use(['science', 'ieee'])
 
 
 def plot_distance(exps_epsilon_per_iter=[],
                   exps_distance_per_iter=[],
                   exps_names=[],
                   exps_params=[]):
+
+
+
+
     if len(exps_epsilon_per_iter) == 0:
+        print("Error: Not enough epsilon values per iter!")
         return
 
     # number of experiments
     if (len(exps_epsilon_per_iter)) != (len(exps_distance_per_iter)):
+        print("Error: epsilon size is different from distance size!")
         return
 
     n_exps = len(exps_epsilon_per_iter)
@@ -58,7 +66,7 @@ def plot_distance(exps_epsilon_per_iter=[],
         ax.set_ylabel("Epsilon/Distance (x-x0)")
         ax.grid()
 
-    plt.tight_layout()
+
     plt.show()
 
 
@@ -67,60 +75,55 @@ def plot_epsilon_robust(exps_distances=[],
                         exps_params=[],
                         best_distances=[]):
     if len(exps_distances) == 0:
+        print("Error: Not enough distances per experiment!")
         return
 
     # number of experiments
     n_exps = len(exps_distances)
     plot_grid_size = n_exps//2 + 1
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(3,3))
 
     for i, exp_distances in enumerate(exps_distances):
         # single experiment
         steps = len(exp_distances)
         batch_size = len(exp_distances[0])
 
-        distances = np.array([])
-        robust_per_iter = []
-        for distance in exp_distances:
-            # checking, for each step, the epsilon tensor
-            distances = np.concatenate((distances, distance.numpy()), axis=None)
-            robust_per_iter += [
-                (np.count_nonzero(dist > best_distances[i])/batch_size)
-                for dist in distance
-            ]
+        distances, robust_per_iter = compute_robust(exp_distances, best_distances[i])
 
         distances = np.array(distances)
         distances.sort()
         robust_per_iter.sort(reverse=True)
 
-        ax = fig.add_subplot(plot_grid_size, plot_grid_size, i+1)
+        ax = fig.add_subplot(plot_grid_size, plot_grid_size, i + 1)
         ax.plot(distances,
-                robust_per_iter,
-                label='robust')
-        ax.plot(8/255, 0.6344, 'x')
-        #x_ticks = np.around(np.linspace(np.min(epsilons), np.max(epsilons), num=8), 2)
-        #ax.set_xticks(x_ticks)
+                robust_per_iter)
+        ax.plot(8/255, 0.661, 'x', label='AA')
         ax.grid()
 
         dpi = fig.dpi
         rect_height_inch = ax.bbox.height / dpi
         fontsize = rect_height_inch * 4
-
-        ax.set_title(f"Steps: {steps}, batch: {batch_size}, norm: {exps_params[i]['norm']},\nOptimizier: {exps_params[i]['optimizer']}, Scheduler: {exps_params[i]['scheduler']}", fontsize=fontsize)
-
-        ax.set_xlabel("Distance")
-        ax.set_ylabel("Robust")
-    plt.tight_layout()
-    plt.show()
-
-
-    # TODO: save the plot
-    # plot_name = f'plot_{steps}_{norm}'
-    # fig1.savefig(os.path.join(path, f"{plot_name}.png"))
+        ax.set_title(f"Steps: {steps}, batch: {batch_size}, norm: {exps_params[i]['norm']},"
+                     f"\nOptimizer: {exps_params[i]['optimizer']}, Scheduler: {exps_params[i]['scheduler']}",
+                     fontsize=fontsize)
+        ax.legend(loc=0, prop={'size': 8})
+        ax.set_xlabel(r"$||\boldsymbol{\delta}||_\infty$")
+        ax.set_ylabel("R. Acc.")
 
 
+    plt.xlim([0, 0.2])
+    fig.savefig("example.pdf")
+
+'''
 def plot_2D_attack(clf, target, labels, n_classes):
+    """
+    Args:
+        clf: the classifier
+        target: True if the attack is targeted
+        labels: true labels
+        n_classes: total number of classes
+    """
     if target is not False:
         target_classes = (labels + 1) % n_classes * target
         criterion = fb.criteria.TargetedMisclassification(target_classes)
@@ -128,13 +131,15 @@ def plot_2D_attack(clf, target, labels, n_classes):
         criterion = fb.criteria.Misclassification(labels)
         target_classes = labels
 
-    image_path = "../../../images/"  # sarebbe da cambiare
+    image_path = "../../../images/"  # change the path here
     fig = CFigure(width=5, height=5)
 
     n_grid_pts = 20
 
     # Convenience function for plotting the decision function of a classifier
     fig.sp.plot_decision_regions(clf, n_grid_points=200, plot_background=False)
+    # We tried to implement the loss_fmn_fn() function
+    # this function should be changed to let the fig.sp.plot_fun generate the landscape
     fig.sp.plot_fun(func=loss_fmn_fn(),
                     multipoint=False,
                     colorbar=False,
@@ -152,3 +157,5 @@ def plot_2D_attack(clf, target, labels, n_classes):
                 format='png')
     plt.show()
     fig.close()
+    
+'''
