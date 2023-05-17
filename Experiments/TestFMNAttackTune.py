@@ -43,10 +43,14 @@ class TestFMNAttackTune(TestAttack):
         self.device = device
         self.optimizer_config = optimizer_config
         self.scheduler_config = scheduler_config
+        #print(len(dataset))
 
         # load only the test part of the dataset (e.g. 50% was used for tuning, rest is for testing/val purposes)
-        dataset_frac = list(range(math.floor(len(dataset) * tuning_dataset_percent)+1, len(dataset)))
-        dataset_frac = torch.utils.data.Subset(dataset, dataset_frac)
+        if tuning_dataset_percent != 1:
+            dataset_frac = list(range(math.floor(len(dataset) * tuning_dataset_percent)+1, len(dataset)))
+            dataset_frac = torch.utils.data.Subset(dataset, dataset_frac)
+        else:
+            dataset_frac=dataset
 
         self.dl_test = torch.utils.data.DataLoader(dataset_frac,
                                                    batch_size=self.batch_size,

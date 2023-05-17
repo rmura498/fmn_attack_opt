@@ -39,7 +39,7 @@ models_ids = {}
 for model_id in MODEL_DATASET:
     models_ids[MODEL_DATASET[model_id]['model_name']] = f'M{model_id}'
 
-configs = os.listdir(".")
+configs = os.listdir("../Configs/ModelsBestConfigs/final_configs")
 configs.remove('read_final_confs.py')
 
 best_conf = {}
