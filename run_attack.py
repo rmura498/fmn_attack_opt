@@ -105,7 +105,8 @@ if __name__ == '__main__':
                             create_exp_folder=True,
                             tuning_dataset_percent=tuning_dataset_percent,
                             model_name=model_name,
-                            device=device)
+                            device=device,
+                            n_batches=20)
     exp.run()
     exp.save_data()
 

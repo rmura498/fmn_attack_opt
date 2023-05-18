@@ -25,7 +25,8 @@ class TestFMNAttackTune(TestAttack):
                  scheduler_config=None,
                  loss = 'LL',
                  device=torch.device('cpu'),
-                 tuning_dataset_percent=0.5
+                 tuning_dataset_percent=0.5,
+                 n_batches = 10
                  ):
         super().__init__(
             model,
@@ -59,12 +60,13 @@ class TestFMNAttackTune(TestAttack):
 
         # self.samples, self.labels = next(iter(self.dl_test))
         self.loss = True if loss == 'LL' else False
+        self.n_batches = n_batches
 
         #self.samples.to(self.device)
         #self.labels.to(self.device)
 
         self.attacks = []
-        for n in range(10):
+        for n in range(self.n_batches):
             samples, labels = next(self.dl_test_iter)
             samples.to(self.device)
             labels.to(self.device)
